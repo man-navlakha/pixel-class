@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import 'react-native-reanimated';
 import Animated, { FadeOut } from 'react-native-reanimated';
+import Toast from 'react-native-toast-message';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -46,7 +47,8 @@ export default function RootLayout() {
   return (
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <Stack>
-        <Stack.Screen name="index" options={{ title: 'Home', headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
         <Stack.Screen name="auth/login" options={{ headerShown: false }} />
         <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
       </Stack>
@@ -66,6 +68,7 @@ export default function RootLayout() {
           <Text style={styles.appName}>Pixel Class</Text>
         </Animated.View>
       )}
+      <Toast />
     </View>
   );
 }
