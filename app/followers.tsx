@@ -11,6 +11,8 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import VerifiedBadge from '../components/VerifiedBadge';
+import { verifiedUsernames } from '../constants/verifiedAccounts';
 import { API_URLS, apiCall } from '../utils/api';
 
 export default function FollowersScreen() {
@@ -108,7 +110,12 @@ export default function FollowersScreen() {
                 style={styles.avatar}
             />
             <View style={styles.info}>
-                <Text style={styles.username}>{item.username}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={styles.username}>{item.username}</Text>
+                    {verifiedUsernames.has(item.username) && (
+                        <VerifiedBadge size={14} style={{ marginLeft: 4 }} />
+                    )}
+                </View>
                 <Text style={styles.fullname}>{item.first_name} {item.last_name}</Text>
             </View>
 

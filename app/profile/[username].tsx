@@ -14,6 +14,8 @@ import {
     View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import VerifiedBadge from '../../components/VerifiedBadge';
+import { verifiedUsernames } from '../../constants/verifiedAccounts';
 import { API_URLS, apiCall } from '../../utils/api';
 
 export default function ProfileScreen() {
@@ -26,6 +28,9 @@ export default function ProfileScreen() {
     const [currentUser, setCurrentUser] = useState<string>('');
     const [isFollowing, setIsFollowing] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+
+    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [suggestionLoading, setSuggestionLoading] = useState<string | null>(null);
 
     useEffect(() => {
         fetchData();
@@ -50,17 +55,77 @@ export default function ProfileScreen() {
             const postsRes = await apiCall(API_URLS.PROFILE_POSTS, 'POST', { username: targetUser });
             setPosts(postsRes.posts || []);
 
-            // 5. Check Follow Status
+            // 5. Check Follow Status & Fetch Suggestions
             if (targetUser !== me.username) {
-                // This logic might need adjustment based on your specific backend implementation
-                // For now, we default to false as we can't easily check "am I following them" 
-                // without iterating the entire follower list or having a specific endpoint.
-                setIsFollowing(false);
+                setIsFollowing(false); // Default
+
+                // Fetch Suggestions Logic:
+                // 1. Get Lists: Target Following, Target Followers, My Following
+                const [targetFollowing, targetFollowers, myFollowing] = await Promise.all([
+                    apiCall(API_URLS.FOLLOWING, 'POST', { username: targetUser }).catch(() => []),
+                    apiCall(API_URLS.FOLLOWERS, 'POST', { username: targetUser }).catch(() => []),
+                    apiCall(API_URLS.FOLLOWING, 'POST', { username: me.username }).catch(() => [])
+                ]);
+
+                const myFollowingSet = new Set(Array.isArray(myFollowing) ? myFollowing.map((u: any) => u.username) : []);
+
+                // Update Follow Status
+                setIsFollowing(myFollowingSet.has(targetUser));
+
+                const suggestionsMap = new Map();
+
+                // Helper to add to map
+                const addToMap = (user: any) => {
+                    if (user.username !== me.username && !myFollowingSet.has(user.username)) {
+                        suggestionsMap.set(user.username, user);
+                    }
+                };
+
+                // Create a pool of available user objects from lists to avoid re-fetching
+                const availableUsers = new Map();
+                if (Array.isArray(targetFollowing)) targetFollowing.forEach((u: any) => availableUsers.set(u.username, u));
+                if (Array.isArray(targetFollowers)) targetFollowers.forEach((u: any) => availableUsers.set(u.username, u));
+
+                // A. Process Verified Users (Priority)
+                const verifiedArray = Array.from(verifiedUsernames);
+                const missingVerified: string[] = [];
+
+                for (const vUser of verifiedArray) {
+                    if (vUser === me.username || myFollowingSet.has(vUser)) continue;
+
+                    if (availableUsers.has(vUser)) {
+                        suggestionsMap.set(vUser, availableUsers.get(vUser));
+                    } else {
+                        missingVerified.push(vUser);
+                    }
+                }
+
+                // Fetch details for missing verified users
+                if (missingVerified.length > 0) {
+                    const verifiedPromises = missingVerified.map(vUsername =>
+                        apiCall(API_URLS.PROFILE_DETAILS, 'POST', { username: vUsername })
+                            .catch(() => null)
+                    );
+                    const fetchedVerified = await Promise.all(verifiedPromises);
+                    fetchedVerified.forEach((u: any) => {
+                        if (u && u.username) suggestionsMap.set(u.username, u);
+                    });
+                }
+
+                // B. Add Target Following
+                if (Array.isArray(targetFollowing)) targetFollowing.forEach(addToMap);
+
+                // C. Add Target Followers
+                if (Array.isArray(targetFollowers)) targetFollowers.forEach(addToMap);
+
+                setSuggestions(Array.from(suggestionsMap.values()));
+
+            } else {
+                setSuggestions([]);
             }
 
         } catch (error: any) {
             console.error("Profile Fetch Error:", error.message || error);
-            // Optional: Alert.alert("Error", "Failed to load profile data.");
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -85,6 +150,23 @@ export default function ProfileScreen() {
         }
     };
 
+    const handleSuggestionFollow = async (suggestedUser: any) => {
+        setSuggestionLoading(suggestedUser.username);
+        try {
+            await apiCall(API_URLS.FOLLOW, 'POST', {
+                username: currentUser,
+                follow_username: suggestedUser.username
+            });
+            // Remove from suggestions list
+            setSuggestions(prev => prev.filter(u => u.username !== suggestedUser.username));
+            Alert.alert("Success", `You are now following ${suggestedUser.username}`);
+        } catch (error) {
+            Alert.alert("Error", "Failed to follow user");
+        } finally {
+            setSuggestionLoading(null);
+        }
+    };
+
     const renderHeader = () => {
         if (!profile) return null;
         const isOwnProfile = profile.username === currentUser;
@@ -95,7 +177,12 @@ export default function ProfileScreen() {
                     source={{ uri: profile.profile_pic || "https://i.pravatar.cc/150" }}
                     style={styles.avatar}
                 />
-                <Text style={styles.name}>{profile.username}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+                    <Text style={styles.name}>{profile.username}</Text>
+                    {verifiedUsernames.has(profile.username) && (
+                        <VerifiedBadge size={24} style={{ marginLeft: 6 }} />
+                    )}
+                </View>
 
                 {/* Stats */}
                 <View style={styles.statsRow}>
@@ -128,9 +215,14 @@ export default function ProfileScreen() {
                 {/* Actions */}
                 <View style={styles.actionRow}>
                     {isOwnProfile ? (
-                        <TouchableOpacity style={styles.btnSecondary} onPress={() => router.push('/auth/logout' as any)}>
-                            <Text style={styles.btnText}>Logout</Text>
-                        </TouchableOpacity>
+                        <>
+                            <TouchableOpacity style={styles.btnSecondary} onPress={() => router.push('/profile/edit' as any)}>
+                                <Text style={styles.btnText}>Edit Profile</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.btnSecondary} onPress={() => router.push('/auth/logout' as any)}>
+                                <Text style={styles.btnText}>Logout</Text>
+                            </TouchableOpacity>
+                        </>
                     ) : (
                         <TouchableOpacity
                             style={[styles.btnPrimary, isFollowing && styles.btnOutline]}
@@ -142,6 +234,65 @@ export default function ProfileScreen() {
                         </TouchableOpacity>
                     )}
                 </View>
+
+                {/* Suggestions Section */}
+                {!isOwnProfile && suggestions.length > 0 && (
+                    <View style={styles.suggestionsContainer}>
+                        <View style={styles.suggestionsHeader}>
+                            <Text style={styles.suggestionsTitle}>Suggested for you</Text>
+                            <TouchableOpacity>
+                                <Text style={styles.seeAllText}>See all</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <FlatList
+                            data={suggestions}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            keyExtractor={(item) => item.username}
+                            renderItem={({ item }) => (
+                                <View style={styles.suggestionCard}>
+                                    <TouchableOpacity
+                                        style={styles.closeButton}
+                                        onPress={() => setSuggestions(prev => prev.filter(u => u.username !== item.username))}
+                                    >
+                                        <Ionicons name="close" size={16} color="#888" />
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity onPress={() => router.push(`/profile/${item.username}` as any)}>
+                                        <Image
+                                            source={{ uri: item.profile_pic || `https://i.pravatar.cc/150?u=${item.username}` }}
+                                            style={styles.suggestionAvatar}
+                                        />
+                                    </TouchableOpacity>
+
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 8 }}>
+                                        <Text style={styles.suggestionUsername} numberOfLines={1}>{item.username}</Text>
+                                        {verifiedUsernames.has(item.username) && (
+                                            <VerifiedBadge size={12} style={{ marginLeft: 4 }} />
+                                        )}
+                                    </View>
+
+                                    <Text style={styles.suggestionName} numberOfLines={1}>
+                                        {item.first_name} {item.last_name}
+                                    </Text>
+
+                                    <TouchableOpacity
+                                        style={styles.suggestionFollowBtn}
+                                        onPress={() => handleSuggestionFollow(item)}
+                                        disabled={suggestionLoading === item.username}
+                                    >
+                                        {suggestionLoading === item.username ? (
+                                            <ActivityIndicator size="small" color="#4A90E2" />
+                                        ) : (
+                                            <Text style={styles.suggestionFollowText}>Follow</Text>
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                            contentContainerStyle={{ paddingHorizontal: 4 }}
+                        />
+                    </View>
+                )}
 
                 <Text style={styles.sectionTitle}>Notes Uploaded</Text>
             </View>
@@ -192,7 +343,7 @@ const styles = StyleSheet.create({
     listContent: { paddingBottom: 20 },
     header: { alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#333', marginBottom: 10 },
     avatar: { width: 100, height: 100, borderRadius: 50, marginBottom: 12, borderWidth: 2, borderColor: '#4A90E2' },
-    name: { color: '#FFF', fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
+    name: { color: '#FFF', fontSize: 24, fontWeight: 'bold' },
     statsRow: { flexDirection: 'row', width: '100%', justifyContent: 'space-around', marginBottom: 24 },
     stat: { alignItems: 'center' },
     statVal: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
@@ -210,4 +361,36 @@ const styles = StyleSheet.create({
     postContent: { marginLeft: 12, flex: 1 },
     postTitle: { color: '#FFF', fontSize: 16, fontWeight: '500' },
     postSub: { color: '#888', fontSize: 12, marginTop: 2 },
+
+    // Suggestions Styles
+    suggestionsContainer: { width: '100%', marginBottom: 24 },
+    suggestionsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingHorizontal: 4 },
+    suggestionsTitle: { color: '#FFF', fontSize: 16, fontWeight: '600' },
+    seeAllText: { color: '#4A90E2', fontSize: 14 },
+    suggestionCard: {
+        width: 140,
+        backgroundColor: '#000',
+        borderRadius: 8,
+        padding: 12,
+        alignItems: 'center',
+        marginRight: 10,
+        borderWidth: 1,
+        borderColor: '#333',
+        position: 'relative'
+    },
+    closeButton: { position: 'absolute', top: 8, right: 8, zIndex: 1 },
+    suggestionAvatar: { width: 60, height: 60, borderRadius: 30, marginBottom: 8 },
+    suggestionUsername: { color: '#FFF', fontSize: 14, fontWeight: '600', textAlign: 'center' },
+    suggestionName: { color: '#888', fontSize: 12, textAlign: 'center', marginBottom: 12 },
+    suggestionFollowBtn: {
+        backgroundColor: 'transparent',
+        paddingVertical: 6,
+        paddingHorizontal: 20,
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: '#4A90E2',
+        width: '100%',
+        alignItems: 'center'
+    },
+    suggestionFollowText: { color: '#4A90E2', fontSize: 12, fontWeight: '600' },
 });

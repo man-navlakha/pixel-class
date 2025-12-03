@@ -5,6 +5,10 @@ export const API_URLS = {
     LOGIN: `${BASE_URL}/api/user/login/`,
     REGISTER: `${BASE_URL}/api/user/register/`,
     VERIFY_OTP: `${BASE_URL}/api/user/verify-otp/`,
+
+    // Add this line:
+    LOGOUT: `${BASE_URL}/api/user/logout/`,
+
     COURSES: `${BASE_URL}/api/home/courses/`,
     GET_SUBJECTS: `${BASE_URL}/api/home/QuePdf/Get_Subjact`,
     GET_SUBJECT_PDFS: `${BASE_URL}/api/home/QuePdf/Subject_Pdf`,
@@ -19,21 +23,27 @@ export const API_URLS = {
     USER_SEARCH: `${BASE_URL}/api/Profile/UserSearch/`,
     FOLLOWING: `${BASE_URL}/api/Profile/following/`,
     FOLLOWERS: `${BASE_URL}/api/Profile/followers/`,
+    PROFILE_EDIT: `${BASE_URL}/api/Profile/edit/`,
 
     // Auth Endpoints
     FORGOT_PASSWORD: `${BASE_URL}/api/user/password_reset/`,
     RESET_PASSWORD: `${BASE_URL}/api/user/submit-new-password/`,
 };
 
-export const apiCall = async (endpoint: string, method: 'POST' | 'GET', body?: any) => {
+export const apiCall = async (endpoint: string, method: 'POST' | 'GET' | 'PUT', body?: any) => {
     try {
+        const isFormData = body instanceof FormData;
+        const headers: any = {};
+
+        if (!isFormData) {
+            headers['Content-Type'] = 'application/json';
+        }
+
         const response = await fetch(endpoint, {
             method,
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: body ? JSON.stringify(body) : undefined,
-            credentials: 'include', // Important for sending the auth cookies
+            headers,
+            body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
+            credentials: 'include', // Important for sending/clearing cookies
         });
 
         const data = await response.json();

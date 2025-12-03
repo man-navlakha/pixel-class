@@ -60,7 +60,7 @@ export default function RootLayout() {
         >
           <View style={styles.logoContainer}>
             <Image
-              source={require('../assets/images/icon.png')}
+              source={{ uri: 'https://ik.imagekit.io/pxc/pixel%20class%20fav%20w-02.png' }}
               style={styles.logoImage}
               contentFit="contain"
             />

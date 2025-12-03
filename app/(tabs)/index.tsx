@@ -7,6 +7,7 @@ import {
     ActivityIndicator,
     Dimensions,
     FlatList,
+    Image,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -16,7 +17,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { API_URLS, apiCall } from '../../utils/api';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 48) / 2;
+const SPACING = 24; // Side padding
+const GAP = 16; // Gap between cards
+const CARD_WIDTH = (width - (SPACING * 2) - GAP) / 2;
 
 export default function HomeScreen() {
     const router = useRouter();
@@ -68,21 +71,29 @@ export default function HomeScreen() {
         <TouchableOpacity
             style={styles.cardContainer}
             onPress={() => handleSemesterPress(item)}
-            activeOpacity={0.9}
+            activeOpacity={0.8}
         >
             <LinearGradient
-                colors={['#2A2A2A', '#1F1F1F']}
+                // Lighter dark grey to darker grey gradient
+                colors={['#333333', '#1A1A1A']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
                 style={styles.card}
             >
-                <View style={styles.cardIconBg}>
-                    <Ionicons name="school" size={24} color="#4A90E2" />
+                {/* Top Section: Icon */}
+                <View style={styles.cardHeader}>
+                    <View style={styles.cardIconBg}>
+                        <Ionicons name="school-outline" size={24} color="#4A90E2" />
+                    </View>
+                    <View style={styles.badge}>
+                        <Ionicons name="chevron-forward" size={14} color="#AAA" />
+                    </View>
                 </View>
-                <View>
-                    <Text style={styles.cardTitle}>Semester {item}</Text>
-                    <Text style={styles.cardSubtitle}>View Subjects</Text>
-                </View>
-                <View style={styles.cardArrow}>
-                    <Ionicons name="arrow-forward" size={16} color="#666" />
+
+                {/* Bottom Section: Text */}
+                <View style={styles.cardContent}>
+                    <Text style={styles.cardLabel}>Semester</Text>
+                    <Text style={styles.cardTitle}>{item}</Text>
                 </View>
             </LinearGradient>
         </TouchableOpacity>
@@ -244,61 +255,84 @@ const styles = StyleSheet.create({
         right: -10,
         bottom: -10,
     },
+    // Updated FlatList styles
     listContent: {
-        paddingHorizontal: 24,
+        paddingHorizontal: SPACING, // 24
         paddingBottom: 40,
+        paddingTop: 20, // Add some top space
     },
+
     sectionTitle: {
         color: '#FFF',
-        fontSize: 18,
+        fontSize: 20, // Slightly larger to match the new design
         fontWeight: 'bold',
-        marginBottom: 16,
+        marginBottom: 20, // Increased spacing
+        marginLeft: 4, // Aligns with the cards visually
     },
     row: {
-        justifyContent: 'space-between',
+        justifyContent: 'space-between', // This handles the GAP automatically now
+        marginBottom: GAP,
     },
+
+    // REDESIGNED CARD STYLES
     cardContainer: {
         width: CARD_WIDTH,
-        marginBottom: 16,
-        borderRadius: 20,
+        height: 170, // Slightly taller for better proportions
+        borderRadius: 24,
+        // Deep shadow for depth
         shadowColor: "#000",
         shadowOffset: {
             width: 0,
-            height: 4,
+            height: 8,
         },
-        shadowOpacity: 0.3,
-        shadowRadius: 4.65,
-        elevation: 8,
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
+        elevation: 10,
     },
     card: {
+        flex: 1,
+        borderRadius: 24,
         padding: 16,
-        borderRadius: 20,
-        height: 150,
         justifyContent: 'space-between',
         borderWidth: 1,
-        borderColor: '#333',
+        borderColor: 'rgba(255,255,255,0.08)', // Subtle glass border effect
+    },
+    cardHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
     },
     cardIconBg: {
-        width: 40,
-        height: 40,
-        borderRadius: 12,
-        backgroundColor: 'rgba(74, 144, 226, 0.1)',
+        width: 48,
+        height: 48,
+        borderRadius: 16,
+        backgroundColor: 'rgba(74, 144, 226, 0.15)', // More transparent blue
         justifyContent: 'center',
         alignItems: 'center',
     },
-    cardTitle: {
-        color: '#FFF',
-        fontSize: 16,
-        fontWeight: 'bold',
+    badge: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    cardContent: {
+        marginTop: 12,
+    },
+    cardLabel: {
+        color: '#888',
+        fontSize: 12,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+        fontWeight: '600',
         marginBottom: 4,
     },
-    cardSubtitle: {
-        color: '#666',
-        fontSize: 12,
+    cardTitle: {
+        color: '#FFF',
+        fontSize: 32, // Large, bold number
+        fontWeight: 'bold',
+        letterSpacing: -1, // Tight tracking for modern look
     },
-    cardArrow: {
-        position: 'absolute',
-        bottom: 16,
-        right: 16,
-    }
 });

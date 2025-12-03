@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "pixel-class",
-    "slug": "pixel-class",
+    "name": "Pixel Class",
+    "slug": "pixelclass",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "https://ik.imagekit.io/pxc/pixel%20class%20fav%20w-02.png",
@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mannavlakha.pixelclass"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +20,28 @@
         "monochromeImage": "https://ik.imagekit.io/pxc/pixel%20class%20fav%20w-02.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "pixelclass"
+            },
+            {
+              "scheme": "https",
+              "host": "pixelclass.netlify.app",
+              "pathPrefix": "/auth/password"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ],
+      "package": "com.mannavlakha.pixelclass"
     },
     "web": {
       "output": "static",
@@ -44,6 +66,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d2ea2d66-46a8-4cae-ae33-5f117a0ec481"
+      }
     }
   }
 }

@@ -33,7 +33,7 @@ export default function LoginScreen() {
 
             // Backend sets HttpOnly cookies on success.
             // React Native will automatically store them for future requests.
-            router.replace('/');
+            router.replace('/(tabs)' as any);
         } catch (err: any) {
             setError(err.message);
             Alert.alert("Login Failed", err.message);
@@ -54,7 +54,7 @@ export default function LoginScreen() {
                 <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                     <Animated.View entering={FadeInUp.delay(200).duration(1000)} style={styles.header}>
                         <Image
-                            source={require('../../assets/images/icon.png')}
+                            source={{ uri: 'https://ik.imagekit.io/pxc/pixel%20class%20fav%20w-02.png' }}
                             style={styles.logo}
                             contentFit="contain"
                         />
@@ -83,8 +83,9 @@ export default function LoginScreen() {
 
                         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-                        <TouchableOpacity style={styles.forgotPassword}>
-                            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+
+                        <TouchableOpacity onPress={() => router.push('/auth/forgetpassword')} style={styles.forgotPassword}>
+                            <Text style={styles.linkText}>Forgot Password?</Text>
                         </TouchableOpacity>
 
                         <Button

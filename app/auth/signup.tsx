@@ -19,7 +19,7 @@ export default function SignupScreen() {
 
     // UI State
     const [loading, setLoading] = useState(false);
-    const [step, setStep] = useState < 'signup' | 'otp' > ('signup'); // Track if we are registering or verifying OTP
+    const [step, setStep] = useState<'signup' | 'otp'>('signup'); // Track if we are registering or verifying OTP
     const [error, setError] = useState('');
 
     const handleSignup = async () => {
@@ -78,7 +78,7 @@ export default function SignupScreen() {
                 <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                     <Animated.View entering={FadeInUp.delay(200).duration(1000)} style={styles.header}>
                         <Image
-                            source={require('../../assets/images/icon.png')}
+                            source={{ uri: 'https://ik.imagekit.io/pxc/pixel%20class%20fav%20w-02.png' }}
                             style={styles.logo}
                             contentFit="contain"
                         />
