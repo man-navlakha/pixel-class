@@ -92,9 +92,6 @@ export default function CustomTabBar() {
         if (route === '/(tabs)') {
             return pathname === '/' || pathname === '/index';
         }
-
-        // Remove the group syntax from route for comparison
-        // e.g. /(tabs)/chat -> /chat
         const cleanRoute = route.replace('/(tabs)', '');
 
         // Check if pathname starts with the clean route
