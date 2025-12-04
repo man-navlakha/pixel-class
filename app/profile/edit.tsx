@@ -1,12 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
     Image,
-    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
@@ -50,9 +50,15 @@ export default function EditProfileScreen() {
     const fetchCurrentUser = async () => {
         try {
             const me = await apiCall(API_URLS.ME, 'GET');
-            setOriginalUsername(me.username);
-            setUsername(me.username);
-            setImagePreview(me.profile_pic);
+
+            // Fetch detailed profile to get the correct profile picture
+            const profileDetails = await apiCall(API_URLS.PROFILE_DETAILS, 'POST', {
+                username: me.username
+            });
+
+            setOriginalUsername(profileDetails.username);
+            setUsername(profileDetails.username);
+            setImagePreview(profileDetails.profile_pic);
         } catch (error) {
             console.error("Error fetching user:", error);
             Alert.alert("Error", "Failed to load profile");
@@ -86,24 +92,7 @@ export default function EditProfileScreen() {
         const checkUsername = async () => {
             setUsernameStatus("checking");
             try {
-                const res = await apiCall(API_URLS.USER_SEARCH, 'GET', null); // Note: The original code used GET with params. apiCall might need adjustment for GET params or we append to URL.
-                // Wait, apiCall doesn't support query params in the body argument for GET requests easily.
-                // I'll manually append the query param for now or update apiCall.
-                // Let's assume I can append it to the URL.
-
-                // Actually, the USER_SEARCH endpoint in the provided code was: api.get("Profile/UserSearch/", { params: { username: debouncedUsername } })
-                // My apiCall doesn't handle params object. I'll construct the URL.
                 const searchUrl = `${API_URLS.USER_SEARCH}?username=${debouncedUsername}`;
-
-                // Wait, apiCall signature is (endpoint, method, body). 
-                // For GET, body is ignored in my implementation if I pass it? 
-                // Let's look at apiCall implementation again.
-                // "body: body ? JSON.stringify(body) : undefined" -> fetch GET with body is invalid.
-                // So I must pass params in URL.
-
-                // However, I need to use `fetch` directly or update `apiCall` to handle query params? 
-                // I'll just use `fetch` here or use `apiCall` with the query string appended to endpoint.
-
                 const response = await fetch(searchUrl);
                 const data = await response.json();
 
@@ -212,59 +201,63 @@ export default function EditProfileScreen() {
 
     if (initialLoading) {
         return (
-            <SafeAreaView style={styles.center}>
+            <SafeAreaView className="flex-1 bg-[#121212] justify-center items-center">
                 <ActivityIndicator size="large" color="#4A90E2" />
             </SafeAreaView>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()}>
+        <SafeAreaView className="flex-1 bg-[#121212]">
+            <Stack.Screen options={{ headerShown: false }} />
+            <StatusBar style="light" />
+
+            {/* Header */}
+            <View className="flex-row items-center justify-between px-5 py-4 border-b border-white/10">
+                <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
                     <Ionicons name="arrow-back" size={24} color="#FFF" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Edit Profile</Text>
-                <View style={{ width: 24 }} />
+                <Text className="text-white text-lg font-bold">Edit Profile</Text>
+                <View className="w-8" />
             </View>
 
-            <View style={styles.content}>
-                {/* Profile Picture */}
-                <View style={styles.avatarContainer}>
-                    <TouchableOpacity onPress={pickImage}>
+            <View className="p-5">
+                {/* Avatar */}
+                <View className="items-center mb-8">
+                    <TouchableOpacity onPress={pickImage} className="relative">
                         <Image
                             source={{ uri: imagePreview || `https://i.pravatar.cc/150?u=${originalUsername}` }}
-                            style={styles.avatar}
+                            className="w-28 h-28 rounded-full border-2 border-[#4A90E2]"
                         />
-                        <View style={styles.editIcon}>
-                            <Ionicons name="camera" size={20} color="#FFF" />
+                        <View className="absolute bottom-0 right-0 bg-[#4A90E2] p-2 rounded-full border-4 border-[#121212]">
+                            <Ionicons name="camera" size={16} color="#FFF" />
                         </View>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={pickImage}>
-                        <Text style={styles.changePhotoText}>Change Photo</Text>
+                        <Text className="text-[#4A90E2] mt-3 font-semibold">Change Photo</Text>
                     </TouchableOpacity>
                 </View>
 
-                {/* Username Field */}
-                <View style={styles.inputContainer}>
-                    <Text style={styles.label}>Username</Text>
-                    <View style={styles.inputWrapper}>
+                {/* Username Input */}
+                <View className="mb-6">
+                    <Text className="text-white/70 mb-2 ml-1 text-sm font-medium">Username</Text>
+                    <View className="relative">
                         <TextInput
-                            style={styles.input}
+                            className="bg-white/5 rounded-xl px-4 py-3.5 text-white border border-white/10 focus:border-[#4A90E2]"
                             value={username}
                             onChangeText={(text) => setUsername(text.replace(/\s/g, ""))}
                             placeholder="New Username"
                             placeholderTextColor="#666"
                             autoCapitalize="none"
                         />
-                        <View style={styles.statusIcon}>
+                        <View className="absolute right-3 top-3.5">
                             {getStatusIcon()}
                         </View>
                     </View>
 
                     {/* Error Messages */}
                     {["taken", "forbidden", "short"].includes(usernameStatus) && (
-                        <Text style={styles.errorText}>
+                        <Text className="text-red-500 text-xs mt-2 ml-1">
                             {usernameStatus === "taken" && "This username is already taken."}
                             {usernameStatus === "forbidden" && "This username contains a forbidden word."}
                             {usernameStatus === "short" && "Username must be at least 3 characters."}
@@ -274,41 +267,20 @@ export default function EditProfileScreen() {
 
                 {/* Submit Button */}
                 <TouchableOpacity
-                    style={[
-                        styles.submitBtn,
-                        (loading || ["checking", "taken", "forbidden", "short"].includes(usernameStatus)) && styles.disabledBtn
-                    ]}
+                    className={`py-4 rounded-xl items-center ${(loading || ["checking", "taken", "forbidden", "short"].includes(usernameStatus))
+                        ? 'bg-white/10 opacity-50'
+                        : 'bg-[#4A90E2]'
+                        }`}
                     onPress={handleProfileEdit}
                     disabled={loading || ["checking", "taken", "forbidden", "short"].includes(usernameStatus)}
                 >
                     {loading ? (
                         <ActivityIndicator color="#FFF" />
                     ) : (
-                        <Text style={styles.submitBtnText}>Save Changes</Text>
+                        <Text className="text-white font-bold text-lg">Save Changes</Text>
                     )}
                 </TouchableOpacity>
             </View>
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#121212' },
-    center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#121212' },
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, borderBottomWidth: 1, borderBottomColor: '#333' },
-    headerTitle: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
-    content: { padding: 20 },
-    avatarContainer: { alignItems: 'center', marginBottom: 30 },
-    avatar: { width: 100, height: 100, borderRadius: 50, borderWidth: 2, borderColor: '#4A90E2' },
-    editIcon: { position: 'absolute', bottom: 0, right: '35%', backgroundColor: '#4A90E2', padding: 6, borderRadius: 20 },
-    changePhotoText: { color: '#4A90E2', marginTop: 10, fontSize: 14, fontWeight: '600' },
-    inputContainer: { marginBottom: 24 },
-    label: { color: 'rgba(255,255,255,0.7)', marginBottom: 8, fontSize: 14 },
-    inputWrapper: { position: 'relative' },
-    input: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: 12, paddingRight: 40, color: '#FFF', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-    statusIcon: { position: 'absolute', right: 12, top: 12 },
-    errorText: { color: '#FF5252', fontSize: 12, marginTop: 4 },
-    submitBtn: { backgroundColor: '#4A90E2', padding: 16, borderRadius: 8, alignItems: 'center' },
-    disabledBtn: { backgroundColor: '#333', opacity: 0.7 },
-    submitBtnText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
-});

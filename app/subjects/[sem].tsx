@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
@@ -11,6 +12,8 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import CustomTabBar from '../../components/CustomTabBar';
 import { API_URLS, apiCall } from '../../utils/api';
 
 interface Subject {
@@ -21,7 +24,8 @@ interface Subject {
 
 export default function SubjectListScreen() {
     const router = useRouter();
-    const { sem, courseName } = useLocalSearchParams(); // Retrieve params passed from Home
+    const { sem, courseName } = useLocalSearchParams();
+    const insets = useSafeAreaInsets();
 
     const [loading, setLoading] = useState(true);
     const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -34,14 +38,10 @@ export default function SubjectListScreen() {
         if (!sem) return;
 
         try {
-            // Your backend expects "course_name" and "sem" in the POST body
-            // Reference: QuePdfGetSubView in home/views.py
             const response = await apiCall(API_URLS.GET_SUBJECTS, 'POST', {
                 sem: sem,
-                course_name: courseName || "B.C.A" // Default to B.C.A if not passed
+                course_name: courseName || "B.C.A"
             });
-
-            // The backend returns a direct list: [ {id, name, sem}, ... ]
             setSubjects(response);
         } catch (error: any) {
             console.error(error);
@@ -52,8 +52,6 @@ export default function SubjectListScreen() {
     };
 
     const handleSubjectPress = (subject: Subject) => {
-        // Navigate to /resources/[subject]
-        // We pass the subject name and persist the courseName
         router.push({
             pathname: `/resources/${subject.name}` as any,
             params: { courseName: courseName }
@@ -62,20 +60,29 @@ export default function SubjectListScreen() {
 
     const renderSubjectItem = ({ item, index }: { item: Subject; index: number }) => (
         <TouchableOpacity
-            style={styles.card}
             onPress={() => handleSubjectPress(item)}
-            activeOpacity={0.7}
+            activeOpacity={0.8}
+            style={styles.cardContainer}
         >
-            <View style={styles.cardContent}>
-                <View style={styles.iconContainer}>
-                    <Text style={styles.indexText}>{index + 1}</Text>
+            <LinearGradient
+                colors={['#2A2A2A', '#1A1A1A']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.card}
+            >
+                <View style={styles.cardLeft}>
+                    <View style={styles.iconContainer}>
+                        <Text style={styles.indexText}>{String(index + 1).padStart(2, '0')}</Text>
+                    </View>
+                    <View style={styles.textContainer}>
+                        <Text style={styles.subjectName} numberOfLines={1}>{item.name}</Text>
+                        <Text style={styles.subjectCode}>Semester {item.sem} • {courseName || "B.C.A"}</Text>
+                    </View>
                 </View>
-                <View style={styles.textContainer}>
-                    <Text style={styles.subjectName}>{item.name}</Text>
-                    <Text style={styles.subjectCode}>Semester {item.sem}</Text>
+                <View style={styles.arrowBtn}>
+                    <Ionicons name="arrow-forward" size={20} color="#FFF" />
                 </View>
-                <Ionicons name="chevron-forward" size={24} color="#333" />
-            </View>
+            </LinearGradient>
         </TouchableOpacity>
     );
 
@@ -83,13 +90,19 @@ export default function SubjectListScreen() {
         <View style={styles.container}>
             <Stack.Screen
                 options={{
-                    headerTitle: `Semester ${sem}`,
-                    headerStyle: { backgroundColor: '#121212' },
-                    headerTintColor: '#fff',
-                    headerShown: true
+                    headerShown: false, // Custom header
                 }}
             />
             <StatusBar style="light" />
+
+            {/* Custom Header */}
+            <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+                    <Ionicons name="arrow-back" size={24} color="#FFF" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Semester {sem}</Text>
+                <View style={{ width: 40 }} />
+            </View>
 
             {loading ? (
                 <View style={styles.center}>
@@ -100,12 +113,21 @@ export default function SubjectListScreen() {
                     data={subjects}
                     renderItem={renderSubjectItem}
                     keyExtractor={(item) => item.id.toString()}
-                    contentContainerStyle={styles.listContent}
+                    contentContainerStyle={[
+                        styles.listContent,
+                        { paddingBottom: 100 + insets.bottom } // Extra padding for tab bar
+                    ]}
                     ListEmptyComponent={
-                        <Text style={styles.emptyText}>No subjects found for this semester.</Text>
+                        <View style={styles.emptyContainer}>
+                            <Ionicons name="library-outline" size={64} color="#333" />
+                            <Text style={styles.emptyText}>No subjects found.</Text>
+                        </View>
                     }
                 />
             )}
+
+            {/* Floating Tab Bar */}
+            <CustomTabBar />
         </View>
     );
 }
@@ -115,6 +137,28 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#121212',
     },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingBottom: 20,
+        backgroundColor: '#121212',
+        zIndex: 10,
+    },
+    backBtn: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#252525',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    headerTitle: {
+        color: '#FFF',
+        fontSize: 20,
+        fontWeight: 'bold',
+    },
     center: {
         flex: 1,
         justifyContent: 'center',
@@ -122,24 +166,39 @@ const styles = StyleSheet.create({
     },
     listContent: {
         padding: 20,
+        paddingTop: 10,
+    },
+    cardContainer: {
+        marginBottom: 16,
+        borderRadius: 20,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5,
     },
     card: {
-        backgroundColor: '#1E1E1E',
-        borderRadius: 16,
-        marginBottom: 12,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: '#333',
-    },
-    cardContent: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 16,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.05)',
+    },
+    cardLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
     },
     iconContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#252525',
+        width: 48,
+        height: 48,
+        borderRadius: 16,
+        backgroundColor: 'rgba(74, 144, 226, 0.1)',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 16,
@@ -147,25 +206,39 @@ const styles = StyleSheet.create({
     indexText: {
         color: '#4A90E2',
         fontWeight: 'bold',
-        fontSize: 16,
+        fontSize: 18,
     },
     textContainer: {
         flex: 1,
+        marginRight: 10,
     },
     subjectName: {
         color: '#FFFFFF',
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: 'bold',
         marginBottom: 4,
     },
     subjectCode: {
         color: '#888',
         fontSize: 12,
+        fontWeight: '500',
+    },
+    arrowBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    emptyContainer: {
+        alignItems: 'center',
+        marginTop: 100,
+        opacity: 0.5,
     },
     emptyText: {
         color: '#888',
-        textAlign: 'center',
-        marginTop: 50,
+        marginTop: 16,
         fontSize: 16,
     },
 });

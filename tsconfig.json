@@ -6,13 +6,15 @@
       "@/*": [
         "./*"
       ]
-    }
+    },
+    "jsxImportSource": "nativewind"
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
+    "nativewind-env.d.ts",
     "app/auth/login.jsx",
     "utils/api.js"
   ]

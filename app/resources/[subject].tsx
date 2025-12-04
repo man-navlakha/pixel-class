@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -12,6 +13,8 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import CustomTabBar from '../../components/CustomTabBar';
 import { API_URLS, apiCall } from '../../utils/api';
 
 const MENU_OPTIONS = [
@@ -23,7 +26,6 @@ const MENU_OPTIONS = [
     { key: 'practical', label: 'General Book' },
 ];
 
-// Categories that open directly
 const DIRECT_OPEN_CATEGORIES = ['notes', 'exam_papper', 'practical'];
 
 interface PdfResource {
@@ -38,6 +40,7 @@ interface PdfResource {
 export default function ResourceListScreen() {
     const router = useRouter();
     const { subject, courseName } = useLocalSearchParams();
+    const insets = useSafeAreaInsets();
 
     const [loading, setLoading] = useState(true);
     const [allPdfs, setAllPdfs] = useState<PdfResource[]>([]);
@@ -67,12 +70,10 @@ export default function ResourceListScreen() {
         return allPdfs.filter(item => (item.choose || '').trim().toLowerCase() === activeTab);
     }, [allPdfs, activeTab]);
 
-    // Action Handler
     const handleItemPress = (item: PdfResource) => {
         const category = (item.choose || '').trim().toLowerCase();
 
         if (DIRECT_OPEN_CATEGORIES.includes(category)) {
-            // Direct Open Logic
             if (item.pdf) {
                 Linking.openURL(item.pdf).catch(err =>
                     Alert.alert("Error", "Could not open PDF viewer.")
@@ -81,12 +82,11 @@ export default function ResourceListScreen() {
                 Alert.alert("Error", "No PDF link available.");
             }
         } else {
-            // Navigate Logic (for Assignments/IMP)
             router.push({
                 pathname: `/answers/${item.id}` as any,
                 params: {
                     title: item.name,
-                    questionPdf: item.pdf // Pass original PDF to next screen if needed
+                    questionPdf: item.pdf
                 }
             });
         }
@@ -98,61 +98,91 @@ export default function ResourceListScreen() {
 
         return (
             <TouchableOpacity
-                style={styles.card}
                 activeOpacity={0.9}
                 onPress={() => handleItemPress(item)}
+                style={styles.cardContainer}
             >
-                <View style={styles.cardIcon}>
-                    <Text style={styles.emojiIcon}>
-                        {isDirectOpen ? '📄' : '❓'}
-                    </Text>
-                </View>
-                <View style={styles.cardContent}>
-                    <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
-                    <Text style={styles.cardSubtitle}>
-                        {item.username || 'Admin'} • {item.year || '2025'}
-                    </Text>
-                </View>
-
-                {/* Action Button */}
-                <TouchableOpacity
-                    style={[styles.actionBtn, isDirectOpen ? styles.btnDownload : styles.btnNavigate]}
-                    onPress={() => handleItemPress(item)}
+                <LinearGradient
+                    colors={['#2A2A2A', '#1A1A1A']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.card}
                 >
-                    <Ionicons
-                        name={isDirectOpen ? "download-outline" : "chevron-forward"}
-                        size={20}
-                        color="#FFF"
-                    />
-                </TouchableOpacity>
+                    <View style={styles.cardLeft}>
+                        <View style={styles.cardIcon}>
+                            <Text style={styles.emojiIcon}>
+                                {isDirectOpen ? '📄' : '❓'}
+                            </Text>
+                        </View>
+                        <View style={styles.cardContent}>
+                            <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
+                            <Text style={styles.cardSubtitle}>
+                                {item.username || 'Admin'} • {item.year || '2025'}
+                            </Text>
+                        </View>
+                    </View>
+
+                    <View style={[styles.actionBtn, isDirectOpen ? styles.btnDownload : styles.btnNavigate]}>
+                        <Ionicons
+                            name={isDirectOpen ? "download-outline" : "chevron-forward"}
+                            size={18}
+                            color={isDirectOpen ? "#4A90E2" : "#FFF"}
+                        />
+                    </View>
+                </LinearGradient>
             </TouchableOpacity>
         );
     };
 
     return (
         <View style={styles.container}>
-            <Stack.Screen
-                options={{
-                    headerTitle: typeof subject === 'string' ? subject : 'Resources',
-                    headerStyle: { backgroundColor: '#121212' },
-                    headerTintColor: '#fff',
-                }}
-            />
+            <Stack.Screen options={{ headerShown: false }} />
             <StatusBar style="light" />
 
+            {/* Custom Header */}
+            <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+                    <Ionicons name="arrow-back" size={24} color="#FFF" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle} numberOfLines={1}>
+                    {typeof subject === 'string' ? subject : 'Resources'}
+                </Text>
+                <View style={{ width: 40 }} />
+            </View>
+
+            {/* Tabs */}
             <View style={styles.tabContainer}>
                 <FlatList
                     data={MENU_OPTIONS}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity
-                            style={[styles.tab, activeTab === item.key && styles.activeTab]}
-                            onPress={() => setActiveTab(item.key)}
-                        >
-                            <Text style={[styles.tabText, activeTab === item.key && styles.activeTabText]}>
-                                {item.label}
-                            </Text>
-                        </TouchableOpacity>
-                    )}
+                    renderItem={({ item }) => {
+                        const isActive = activeTab === item.key;
+                        return (
+                            <TouchableOpacity
+                                onPress={() => setActiveTab(item.key)}
+                                activeOpacity={0.8}
+                                style={[styles.tabWrapper]}
+                            >
+                                {isActive ? (
+                                    <LinearGradient
+                                        colors={['#4A90E2', '#357ABD']}
+                                        start={{ x: 0, y: 0 }}
+                                        end={{ x: 1, y: 1 }}
+                                        style={styles.tab}
+                                    >
+                                        <Text style={[styles.tabText, styles.activeTabText]}>
+                                            {item.label}
+                                        </Text>
+                                    </LinearGradient>
+                                ) : (
+                                    <View style={[styles.tab, styles.inactiveTab]}>
+                                        <Text style={styles.tabText}>
+                                            {item.label}
+                                        </Text>
+                                    </View>
+                                )}
+                            </TouchableOpacity>
+                        );
+                    }}
                     keyExtractor={(item) => item.key}
                     horizontal
                     showsHorizontalScrollIndicator={false}
@@ -161,43 +191,183 @@ export default function ResourceListScreen() {
             </View>
 
             {loading ? (
-                <ActivityIndicator size="large" color="#4A90E2" style={{ marginTop: 50 }} />
+                <View style={styles.center}>
+                    <ActivityIndicator size="large" color="#4A90E2" />
+                </View>
             ) : (
                 <FlatList
                     data={filteredData}
                     renderItem={renderPdfCard}
                     keyExtractor={(item) => item.id.toString()}
-                    contentContainerStyle={styles.listContent}
+                    contentContainerStyle={[
+                        styles.listContent,
+                        { paddingBottom: 100 + insets.bottom }
+                    ]}
                     ListEmptyComponent={
-                        <Text style={styles.emptyText}>No documents found.</Text>
+                        <View style={styles.emptyContainer}>
+                            <Ionicons name="document-text-outline" size={64} color="#333" />
+                            <Text style={styles.emptyText}>No documents found.</Text>
+                        </View>
                     }
                 />
             )}
+
+            <CustomTabBar />
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#121212' },
-    tabContainer: { height: 60, borderBottomWidth: 1, borderBottomColor: '#333' },
-    tabList: { alignItems: 'center', paddingHorizontal: 16 },
-    tab: { paddingHorizontal: 16, paddingVertical: 8, marginRight: 8, borderRadius: 20, borderWidth: 1, borderColor: '#333', backgroundColor: '#1E1E1E' },
-    activeTab: { backgroundColor: '#4A90E2', borderColor: '#4A90E2' },
-    tabText: { color: '#888', fontWeight: '600' },
-    activeTabText: { color: '#FFF' },
-    listContent: { padding: 16 },
-    emptyText: { color: '#666', textAlign: 'center', marginTop: 50 },
+    container: {
+        flex: 1,
+        backgroundColor: '#121212',
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingBottom: 20,
+        backgroundColor: '#121212',
+        zIndex: 10,
+    },
+    backBtn: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#252525',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    headerTitle: {
+        color: '#FFF',
+        fontSize: 18,
+        fontWeight: 'bold',
+        flex: 1,
+        textAlign: 'center',
+        marginHorizontal: 10,
+    },
+    center: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    // Tabs
+    tabContainer: {
+        height: 60,
+        marginBottom: 10,
+    },
+    tabList: {
+        alignItems: 'center',
+        paddingHorizontal: 16,
+    },
+    tabWrapper: {
+        marginRight: 10,
+        height: 36,
+        borderRadius: 18,
+        overflow: 'hidden',
+    },
+    tab: {
+        paddingHorizontal: 20,
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 18,
+    },
+    inactiveTab: {
+        backgroundColor: '#1E1E1E',
+        borderWidth: 1,
+        borderColor: '#333',
+    },
+    tabText: {
+        color: '#888',
+        fontWeight: '600',
+        fontSize: 13,
+    },
+    activeTabText: {
+        color: '#FFF',
+        fontWeight: 'bold',
+    },
+
+    // List
+    listContent: {
+        padding: 20,
+        paddingTop: 0,
+    },
+    emptyContainer: {
+        alignItems: 'center',
+        marginTop: 100,
+        opacity: 0.5,
+    },
+    emptyText: {
+        color: '#888',
+        marginTop: 16,
+        fontSize: 16,
+    },
 
     // Card
-    card: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1E1E1E', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#333' },
-    cardIcon: { width: 48, height: 48, borderRadius: 12, backgroundColor: '#252525', justifyContent: 'center', alignItems: 'center', marginRight: 16 },
-    emojiIcon: { fontSize: 24 },
-    cardContent: { flex: 1 },
-    cardTitle: { color: '#FFF', fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
-    cardSubtitle: { color: '#888', fontSize: 12 },
-
-    // Buttons
-    actionBtn: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
-    btnDownload: { backgroundColor: '#27ae60' }, // Green for download
-    btnNavigate: { backgroundColor: '#4A90E2' }, // Blue for next
+    cardContainer: {
+        marginBottom: 16,
+        borderRadius: 20,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    card: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 16,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.05)',
+    },
+    cardLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+        marginRight: 10,
+    },
+    cardIcon: {
+        width: 48,
+        height: 48,
+        borderRadius: 16,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    emojiIcon: {
+        fontSize: 24,
+    },
+    cardContent: {
+        flex: 1,
+    },
+    cardTitle: {
+        color: '#FFF',
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    cardSubtitle: {
+        color: '#888',
+        fontSize: 12,
+        fontWeight: '500',
+    },
+    actionBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    btnDownload: {
+        backgroundColor: 'rgba(74, 144, 226, 0.15)',
+    },
+    btnNavigate: {
+        backgroundColor: 'rgba(255,255,255,0.1)',
+    },
 });
