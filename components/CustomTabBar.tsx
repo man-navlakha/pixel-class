@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
+import * as Notifications from 'expo-notifications';
 import { usePathname, useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { AppState, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
@@ -10,6 +11,18 @@ import Animated, {
     withTiming
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { API_URLS, apiCall } from '../utils/api';
+
+// Configure Notifications
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+        priority: Notifications.AndroidNotificationPriority.HIGH,
+    }),
+});
 
 // Tab Item Component for individual animation control
 const TabItem = ({ tab, isActive, onPress }: { tab: any, isActive: boolean, onPress: () => void }) => {
@@ -58,11 +71,13 @@ const TabItem = ({ tab, isActive, onPress }: { tab: any, isActive: boolean, onPr
                     size={24}
                     color={isActive ? '#FFFFFF' : '#A0A0A0'}
                 />
-                {tab.badge && (
+                {tab.badge ? (
                     <View style={styles.badge}>
-                        <Text style={styles.badgeText}>{tab.badge}</Text>
+                        <Text style={styles.badgeText}>
+                            {tab.badge > 99 ? '99+' : tab.badge}
+                        </Text>
                     </View>
-                )}
+                ) : null}
             </Animated.View>
             <Animated.Text style={[styles.label, animatedLabelStyle, isActive && styles.activeLabel]}>
                 {tab.name}
@@ -75,10 +90,170 @@ export default function CustomTabBar() {
     const router = useRouter();
     const pathname = usePathname();
     const insets = useSafeAreaInsets();
+    const [unreadCount, setUnreadCount] = useState(0);
+    const wsRef = useRef<WebSocket | null>(null);
+    const appState = useRef(AppState.currentState);
+
+    // FIX 2: Changed type to 'any' to handle the conflict between Node.Timeout and number
+    const reconnectInterval = useRef<any>(null);
+
+    useEffect(() => {
+        registerForPushNotificationsAsync();
+        initializeConnection();
+
+        // Handle App State changes (background/foreground)
+        const subscription = AppState.addEventListener('change', nextAppState => {
+            if (
+                appState.current.match(/inactive|background/) &&
+                nextAppState === 'active'
+            ) {
+                console.log('App has come to the foreground! Reconnecting WS...');
+                initializeConnection();
+            } else if (nextAppState.match(/inactive|background/)) {
+                console.log('App going to background. Closing WS...');
+                // Optional: Keep it open for a bit or rely on OS to kill it
+                // wsRef.current?.close(); 
+            }
+
+            appState.current = nextAppState;
+        });
+
+        // Auto-reload connection every 30 seconds to ensure liveness
+        reconnectInterval.current = setInterval(() => {
+            if (wsRef.current?.readyState !== WebSocket.OPEN) {
+                console.log("Auto-reconnecting WS...");
+                initializeConnection();
+            }
+        }, 30000);
+
+        return () => {
+            subscription.remove();
+            if (wsRef.current) wsRef.current.close();
+            if (reconnectInterval.current) clearInterval(reconnectInterval.current);
+        };
+    }, []);
+
+    const registerForPushNotificationsAsync = async () => {
+        try {
+            if (Platform.OS === 'android') {
+                await Notifications.setNotificationChannelAsync('default', {
+                    name: 'default',
+                    importance: Notifications.AndroidImportance.MAX,
+                    vibrationPattern: [0, 250, 250, 250],
+                    lightColor: '#FF231F7C',
+                });
+            }
+
+            const { status: existingStatus } = await Notifications.getPermissionsAsync();
+            let finalStatus = existingStatus;
+            if (existingStatus !== 'granted') {
+                const { status } = await Notifications.requestPermissionsAsync();
+                finalStatus = status;
+            }
+            if (finalStatus !== 'granted') {
+                console.log('Failed to get push token for push notification!');
+                return;
+            }
+        } catch (e) {
+            console.log("Error requesting notification permissions", e);
+        }
+    };
+
+    const initializeConnection = async () => {
+        try {
+            // 1. Ensure we are authenticated first
+            await apiCall(API_URLS.ME, 'GET');
+
+            // 2. Connect WS
+            connectWebSocket();
+        } catch (error) {
+            console.log("Auth check failed or user offline", error);
+        }
+    };
+
+    const connectWebSocket = async () => {
+        try {
+            // 1. Fetch WS Token
+            const tokenUrl = `${API_URLS.ME.replace('me/', '')}ws-token/`;
+            const res = await apiCall(tokenUrl, 'GET');
+            const wsToken = res.ws_token;
+
+            if (!wsToken) {
+                console.log("No WS Token found, skipping connection");
+                return;
+            }
+
+            // 2. Connect
+            const wsUrl = `wss://pixel-classes.onrender.com/ws/notifications/?token=${wsToken}`;
+
+            // Close existing connection if any
+            if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                // Already connected
+                return;
+            }
+            if (wsRef.current) wsRef.current.close();
+
+            const ws = new WebSocket(wsUrl);
+            wsRef.current = ws;
+
+            ws.onopen = () => {
+                console.log("✅ Notification WS Connected");
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === "total_unseen_count") {
+                        const newCount = data.total_unseen_count || 0;
+
+                        // Trigger notification if count increased
+                        setUnreadCount(prev => {
+                            if (newCount > prev) {
+                                sendLocalNotification(newCount);
+                            }
+                            return newCount;
+                        });
+                    }
+                } catch (err) {
+                    console.error("WS Message Parse Error:", err);
+                }
+            };
+
+            ws.onerror = (e) => {
+                console.log("Notification WS Error", e);
+            };
+
+            ws.onclose = () => {
+                console.log("Notification WS Closed");
+            };
+
+        } catch (error) {
+            console.log("Failed to setup Notification WS", error);
+        }
+    };
+
+    const sendLocalNotification = async (count: number) => {
+        // Don't notify if user is already on the chat screen
+        if (pathname.startsWith('/chat')) return;
+
+        await Notifications.scheduleNotificationAsync({
+            content: {
+                title: "New Message",
+                body: `You have ${count} unread message${count > 1 ? 's' : ''}`,
+                data: { url: '/(tabs)/chat' },
+            },
+            trigger: null, // Show immediately
+        });
+    };
 
     const tabs = [
         { name: 'Home', icon: 'home', route: '/(tabs)' },
-        { name: 'Chat', icon: 'chatbubble', route: '/(tabs)/chat', badge: 1 },
+        {
+            name: 'Chat',
+            icon: 'chatbubble',
+            route: '/(tabs)/chat',
+            badge: unreadCount > 0 ? unreadCount : undefined
+        },
         { name: 'Search', icon: 'search', route: '/(tabs)/search' },
         { name: 'Profile', icon: 'person', route: '/(tabs)/profile' },
     ];
@@ -88,16 +263,17 @@ export default function CustomTabBar() {
     };
 
     const isActive = (route: string) => {
-        // Special case for Home
         if (route === '/(tabs)') {
             return pathname === '/' || pathname === '/index';
         }
         const cleanRoute = route.replace('/(tabs)', '');
-
-        // Check if pathname starts with the clean route
-        // This handles nested routes like /profile/edit keeping the Profile tab active
         return pathname.startsWith(cleanRoute);
     };
+
+    // Hide tab bar on Chat Detail screen
+    if (pathname.startsWith('/chat/')) {
+        return null;
+    }
 
     return (
         <View style={[styles.containerWrapper, { paddingBottom: insets.bottom + 10 }]}>
@@ -196,11 +372,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderWidth: 1.5,
         borderColor: '#1E1E1E',
+        zIndex: 10,
     },
     badgeText: {
         color: '#FFF',
         fontSize: 9,
         fontWeight: 'bold',
-        paddingHorizontal: 2,
+        paddingHorizontal: 3,
     },
 });

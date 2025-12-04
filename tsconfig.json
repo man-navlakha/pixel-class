@@ -7,7 +7,8 @@
         "./*"
       ]
     },
-    "jsxImportSource": "nativewind"
+    "jsxImportSource": "nativewind",
+    "skipLibCheck": true
   },
   "include": [
     "**/*.ts",
@@ -17,5 +18,8 @@
     "nativewind-env.d.ts",
     "app/auth/login.jsx",
     "utils/api.js"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }
