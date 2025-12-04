@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -58,7 +58,6 @@ export default function FollowersScreen() {
 
             const processedUsers = (followersRes || []).map((user: any) => ({
                 ...user,
-                // Determine if I am following this person
                 is_following: followingSet.has(user.username)
             }));
 
@@ -71,7 +70,7 @@ export default function FollowersScreen() {
         }
     };
 
-    const handleToggleFollow = async (targetUser: any) => {
+    const handleToggleFollow = useCallback(async (targetUser: any) => {
         setActionLoading(targetUser.username);
         try {
             const isFollowing = targetUser.is_following;
@@ -97,9 +96,9 @@ export default function FollowersScreen() {
         } finally {
             setActionLoading(null);
         }
-    };
+    }, [currentUser]);
 
-    const renderItem = ({ item }: { item: any }) => (
+    const renderItem = useCallback(({ item }: { item: any }) => (
         <TouchableOpacity
             style={styles.card}
             activeOpacity={0.7}
@@ -130,7 +129,7 @@ export default function FollowersScreen() {
                     disabled={actionLoading === item.username}
                 >
                     {actionLoading === item.username ? (
-                        <ActivityIndicator size="small" color={item.is_following ? "#FFF" : "#FFF"} />
+                        <ActivityIndicator size="small" color="#FFF" />
                     ) : (
                         <Text style={styles.btnText}>
                             {item.is_following ? "Unfollow" : "Follow"}
@@ -139,7 +138,7 @@ export default function FollowersScreen() {
                 </TouchableOpacity>
             )}
         </TouchableOpacity>
-    );
+    ), [currentUser, actionLoading, handleToggleFollow, router]);
 
     return (
         <View style={styles.container}>

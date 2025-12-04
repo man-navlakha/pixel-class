@@ -16,15 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { API_URLS, apiCall } from '../../utils/api';
 
-// Debounce hook
-function useDebounce(value: string, delay: number) {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-    useEffect(() => {
-        const handler = setTimeout(() => setDebouncedValue(value), delay);
-        return () => clearTimeout(handler);
-    }, [value, delay]);
-    return debouncedValue;
-}
+import { useDebounce } from '../../hooks/useDebounce';
 
 export default function EditProfileScreen() {
     const router = useRouter();
@@ -42,6 +34,7 @@ export default function EditProfileScreen() {
     const forbiddenUsernames = [
         "pxc", "pixel", "pixelclass", "admin", "support", "kill", "murder", "terrorist", "abuse",
     ];
+    // TODO: Ensure backend also validates these forbidden usernames for security.
 
     useEffect(() => {
         fetchCurrentUser();

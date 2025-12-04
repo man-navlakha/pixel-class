@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import VerifiedBadge from '../../components/VerifiedBadge';
 import { verifiedUsernames } from '../../constants/verifiedAccounts';
+import { useDebounce } from '../../hooks/useDebounce';
 import { API_URLS, apiCall } from '../../utils/api';
 
 export default function SearchScreen() {
@@ -26,6 +27,8 @@ export default function SearchScreen() {
 
     const [usernamec, setUsernamec] = useState<string | null>(null);
     const [followingUsernames, setFollowingUsernames] = useState<string[]>([]);
+
+    const debouncedSearch = useDebounce(search, 500);
 
     // --- 1. Fetch logged-in username ---
     useEffect(() => {
@@ -63,12 +66,12 @@ export default function SearchScreen() {
 
     // --- 3. Fetch users on search ---
     useEffect(() => {
-        if (!usernamec || !search.trim()) {
+        if (!usernamec || !debouncedSearch.trim()) {
             setUsers([]);
             return;
         }
 
-        if (search.trim() === usernamec) {
+        if (debouncedSearch.trim() === usernamec) {
             setUsers([]);
             return;
         }
@@ -79,7 +82,7 @@ export default function SearchScreen() {
             setLoading(true);
             try {
                 // Manually constructing query param since apiCall wrapper logic
-                const endpoint = `${API_URLS.USER_SEARCH}?username=${search}`;
+                const endpoint = `${API_URLS.USER_SEARCH}?username=${debouncedSearch}`;
                 const response = await apiCall(endpoint, 'GET');
 
                 if (!active) return;
@@ -88,9 +91,9 @@ export default function SearchScreen() {
                     const filtered = response
                         .filter((user: any) => user.username !== usernamec)
                         .filter((user: any) =>
-                            user.username.toLowerCase().includes(search.toLowerCase()) ||
-                            (user.first_name && user.first_name.toLowerCase().includes(search.toLowerCase())) ||
-                            (user.last_name && user.last_name.toLowerCase().includes(search.toLowerCase()))
+                            user.username.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+                            (user.first_name && user.first_name.toLowerCase().includes(debouncedSearch.toLowerCase())) ||
+                            (user.last_name && user.last_name.toLowerCase().includes(debouncedSearch.toLowerCase()))
                         )
                         .map((user: any) => ({
                             ...user,
@@ -106,15 +109,12 @@ export default function SearchScreen() {
             }
         };
 
-        const timeoutId = setTimeout(() => {
-            fetchUsers();
-        }, 500); // 500ms debounce to match web feel
+        fetchUsers();
 
         return () => {
             active = false;
-            clearTimeout(timeoutId);
         };
-    }, [search, usernamec, followingUsernames]);
+    }, [debouncedSearch, usernamec, followingUsernames]);
 
     // --- Actions ---
     const follow = async (follow_username: string) => {
@@ -159,7 +159,7 @@ export default function SearchScreen() {
         }
     };
 
-    const renderUserItem = ({ item }: { item: any }) => (
+    const renderUserItem = useCallback(({ item }: { item: any }) => (
         <View style={styles.userCard}>
             <TouchableOpacity
                 style={styles.userInfo}
@@ -219,7 +219,7 @@ export default function SearchScreen() {
                 )}
             </View>
         </View>
-    );
+    ), [actionLoading, followingUsernames, router]);
 
     return (
         <View style={styles.container}>

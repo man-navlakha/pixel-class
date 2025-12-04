@@ -2,12 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
     FlatList,
-    Linking,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -28,14 +28,7 @@ const MENU_OPTIONS = [
 
 const DIRECT_OPEN_CATEGORIES = ['notes', 'exam_papper', 'practical'];
 
-interface PdfResource {
-    id: number;
-    name: string;
-    pdf: string;
-    choose: string;
-    year?: number;
-    username?: string;
-}
+import { PdfResource } from '../../types';
 
 export default function ResourceListScreen() {
     const router = useRouter();
@@ -75,7 +68,7 @@ export default function ResourceListScreen() {
 
         if (DIRECT_OPEN_CATEGORIES.includes(category)) {
             if (item.pdf) {
-                Linking.openURL(item.pdf).catch(err =>
+                WebBrowser.openBrowserAsync(item.pdf).catch(err =>
                     Alert.alert("Error", "Could not open PDF viewer.")
                 );
             } else {

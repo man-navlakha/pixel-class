@@ -35,8 +35,9 @@ export default function LoginScreen() {
             // React Native will automatically store them for future requests.
             router.replace('/(tabs)' as any);
         } catch (err: any) {
-            setError(err.message);
-            Alert.alert("Login Failed", err.message);
+            const message = err instanceof Error ? err.message : String(err);
+            setError(message);
+            Alert.alert("Login Failed", message);
         } finally {
             setLoading(false);
         }

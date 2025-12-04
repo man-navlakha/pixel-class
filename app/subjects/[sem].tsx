@@ -16,11 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CustomTabBar from '../../components/CustomTabBar';
 import { API_URLS, apiCall } from '../../utils/api';
 
-interface Subject {
-    id: number;
-    name: string;
-    sem: number;
-}
+import { Subject } from '../../types';
 
 export default function SubjectListScreen() {
     const router = useRouter();
