@@ -31,8 +31,8 @@ export default function AnswerListScreen() {
     const [loading, setLoading] = useState(true);
     const [answers, setAnswers] = useState<AnswerPdf[]>([]);
 
-    // Init Hook
-    const { viewPdf, loadingId } = usePdfViewer();
+    // Init Hook: use sharePdf for sharing, manually nav to viewer for viewing
+    const { sharePdf, loadingId } = usePdfViewer();
 
     useEffect(() => {
         fetchAnswers();
@@ -51,8 +51,16 @@ export default function AnswerListScreen() {
         }
     };
 
+    // Navigation helper for the PDF Viewer
+    const handleView = (uri: string, docTitle: string) => {
+        router.push({
+            pathname: '/pdf-viewer',
+            params: { uri, title: docTitle }
+        });
+    };
+
     const renderAnswerCard = ({ item }: { item: AnswerPdf }) => {
-        const isItemLoading = loadingId === item.id;
+        const isSharing = loadingId === item.id;
 
         return (
             <View style={styles.cardContainer}>
@@ -74,26 +82,33 @@ export default function AnswerListScreen() {
                         </View>
                     </View>
 
-                    <TouchableOpacity
-                        style={styles.downloadBtn}
-                        onPress={() => !isItemLoading && viewPdf(item.pdf, `Answer - ${item.name}`, item.id)}
-                        activeOpacity={0.8}
-                        disabled={isItemLoading}
-                    >
-                        <LinearGradient
-                            colors={['rgba(74, 144, 226, 0.2)', 'rgba(74, 144, 226, 0.1)']}
-                            style={styles.downloadBtnGradient}
+                    {/* Two Buttons: View & Share */}
+                    <View style={styles.actionRow}>
+                        <TouchableOpacity
+                            style={[styles.actionBtn, styles.btnView]}
+                            onPress={() => handleView(item.pdf, `Answer - ${item.name}`)}
+                            activeOpacity={0.8}
                         >
-                            {isItemLoading ? (
-                                <ActivityIndicator size="small" color="#4A90E2" />
+                            <Ionicons name="eye-outline" size={20} color="#4A90E2" />
+                            <Text style={styles.btnTextBlue}>View</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.actionBtn, styles.btnShare]}
+                            onPress={() => sharePdf(item.pdf, `Answer - ${item.name}`, item.id)}
+                            activeOpacity={0.8}
+                            disabled={isSharing}
+                        >
+                            {isSharing ? (
+                                <ActivityIndicator size="small" color="#4ade80" />
                             ) : (
                                 <>
-                                    <Ionicons name="eye-outline" size={20} color="#4A90E2" />
-                                    <Text style={styles.downloadText}>View Solution</Text>
+                                    <Ionicons name="share-social-outline" size={20} color="#4ade80" />
+                                    <Text style={styles.btnTextGreen}>Share</Text>
                                 </>
                             )}
-                        </LinearGradient>
-                    </TouchableOpacity>
+                        </TouchableOpacity>
+                    </View>
                 </LinearGradient>
             </View>
         );
@@ -104,6 +119,7 @@ export default function AnswerListScreen() {
             <Stack.Screen options={{ headerShown: false }} />
             <StatusBar style="light" />
 
+            {/* Custom Header */}
             <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
                     <Ionicons name="arrow-back" size={24} color="#FFF" />
@@ -112,18 +128,15 @@ export default function AnswerListScreen() {
                 <View style={{ width: 40 }} />
             </View>
 
+            {/* Question Info Section */}
             <View style={styles.questionSection}>
                 <Text style={styles.questionTitle}>{title}</Text>
                 {questionPdf && (
                     <TouchableOpacity
                         style={styles.questionBtn}
-                        onPress={() => viewPdf(questionPdf as string, 'Question Paper', 'question-pdf')}
+                        onPress={() => handleView(questionPdf as string, 'Question Paper')}
                     >
-                        {loadingId === 'question-pdf' ? (
-                            <ActivityIndicator size="small" color="#4A90E2" style={{ marginRight: 8 }} />
-                        ) : (
-                            <Ionicons name="document-text" size={16} color="#4A90E2" />
-                        )}
+                        <Ionicons name="document-text" size={16} color="#4A90E2" />
                         <Text style={styles.questionBtnText}>View Question Paper</Text>
                     </TouchableOpacity>
                 )}
@@ -157,27 +170,169 @@ export default function AnswerListScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#121212' },
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 20, backgroundColor: '#121212', zIndex: 10 },
-    backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#252525', justifyContent: 'center', alignItems: 'center' },
-    headerTitle: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
-    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    questionSection: { padding: 20, paddingTop: 0, paddingBottom: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)', marginBottom: 10 },
-    questionTitle: { color: '#FFF', fontSize: 18, fontWeight: 'bold', marginBottom: 12, lineHeight: 26 },
-    questionBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(74, 144, 226, 0.1)', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(74, 144, 226, 0.2)' },
-    questionBtnText: { color: '#4A90E2', marginLeft: 8, fontWeight: '600', fontSize: 13 },
-    list: { padding: 20 },
-    emptyContainer: { alignItems: 'center', marginTop: 60, opacity: 0.5 },
-    emptyText: { color: '#888', marginTop: 16, fontSize: 16 },
-    cardContainer: { marginBottom: 16, borderRadius: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
-    card: { borderRadius: 20, padding: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
-    cardHeader: { flexDirection: 'row', marginBottom: 16 },
-    avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#4A90E2', justifyContent: 'center', alignItems: 'center', marginRight: 12, borderWidth: 2, borderColor: 'rgba(255,255,255,0.1)' },
-    avatarText: { color: '#FFF', fontWeight: 'bold', fontSize: 18 },
-    headerInfo: { flex: 1, justifyContent: 'center' },
-    authorName: { color: '#FFF', fontWeight: 'bold', fontSize: 15, marginBottom: 2 },
-    description: { color: '#AAA', fontSize: 13 },
-    downloadBtn: { borderRadius: 12, overflow: 'hidden' },
-    downloadBtnGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 12, borderWidth: 1, borderColor: 'rgba(74, 144, 226, 0.3)', borderRadius: 12 },
-    downloadText: { color: '#4A90E2', fontWeight: '600', marginLeft: 8 },
+    container: {
+        flex: 1,
+        backgroundColor: '#121212',
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingBottom: 20,
+        backgroundColor: '#121212',
+        zIndex: 10,
+    },
+    backBtn: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#252525',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    headerTitle: {
+        color: '#FFF',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    center: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    // Question Section
+    questionSection: {
+        padding: 20,
+        paddingTop: 0,
+        paddingBottom: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255,255,255,0.05)',
+        marginBottom: 10,
+    },
+    questionTitle: {
+        color: '#FFF',
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 12,
+        lineHeight: 26,
+    },
+    questionBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(74, 144, 226, 0.1)',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        alignSelf: 'flex-start',
+        borderWidth: 1,
+        borderColor: 'rgba(74, 144, 226, 0.2)',
+    },
+    questionBtnText: {
+        color: '#4A90E2',
+        marginLeft: 8,
+        fontWeight: '600',
+        fontSize: 13,
+    },
+
+    // List
+    list: {
+        padding: 20,
+    },
+    emptyContainer: {
+        alignItems: 'center',
+        marginTop: 60,
+        opacity: 0.5,
+    },
+    emptyText: {
+        color: '#888',
+        marginTop: 16,
+        fontSize: 16,
+    },
+
+    // Card
+    cardContainer: {
+        marginBottom: 16,
+        borderRadius: 20,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    card: {
+        borderRadius: 20,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.05)',
+    },
+    cardHeader: {
+        flexDirection: 'row',
+        marginBottom: 16,
+    },
+    avatar: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: '#4A90E2',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+        borderWidth: 2,
+        borderColor: 'rgba(255,255,255,0.1)',
+    },
+    avatarText: {
+        color: '#FFF',
+        fontWeight: 'bold',
+        fontSize: 18,
+    },
+    headerInfo: {
+        flex: 1,
+        justifyContent: 'center',
+    },
+    authorName: {
+        color: '#FFF',
+        fontWeight: 'bold',
+        fontSize: 15,
+        marginBottom: 2,
+    },
+    description: {
+        color: '#AAA',
+        fontSize: 13,
+    },
+
+    // New Action Buttons
+    actionRow: {
+        flexDirection: 'row',
+        gap: 12,
+        marginTop: 4,
+    },
+    actionBtn: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 12,
+        borderRadius: 12,
+        borderWidth: 1,
+    },
+    btnView: {
+        backgroundColor: 'rgba(74, 144, 226, 0.1)',
+        borderColor: 'rgba(74, 144, 226, 0.3)',
+    },
+    btnShare: {
+        backgroundColor: 'rgba(74, 226, 100, 0.1)',
+        borderColor: 'rgba(74, 226, 100, 0.3)',
+    },
+    btnTextBlue: {
+        color: '#4A90E2',
+        fontWeight: '600',
+        marginLeft: 8,
+    },
+    btnTextGreen: {
+        color: '#4ade80',
+        fontWeight: '600',
+        marginLeft: 8,
+    },
 });

@@ -38,7 +38,8 @@ export default function ResourceListScreen() {
     const [currentUser, setCurrentUser] = useState('');
     const insets = useSafeAreaInsets();
 
-    const { viewPdf, loadingId } = usePdfViewer();
+
+    const { sharePdf, loadingId } = usePdfViewer();
     const [loading, setLoading] = useState(true);
     const [allPdfs, setAllPdfs] = useState<PdfResource[]>([]);
     const [activeTab, setActiveTab] = useState('all');
@@ -73,17 +74,20 @@ export default function ResourceListScreen() {
         return allPdfs.filter(item => (item.choose || '').trim().toLowerCase() === activeTab);
     }, [allPdfs, activeTab]);
 
-    const handleItemPress = (item: PdfResource) => {
+
+    const handleView = (item: PdfResource) => {
         const category = (item.choose || '').trim().toLowerCase();
 
         if (DIRECT_OPEN_CATEGORIES.includes(category)) {
+            // Navigate to PDF Viewer
             if (item.pdf) {
-                // Use the new hook instead of WebBrowser
-                viewPdf(item.pdf, item.name, item.id);
-            } else {
-                Alert.alert("Error", "No PDF link available.");
+                router.push({
+                    pathname: '/pdf-viewer',
+                    params: { uri: item.pdf, title: item.name }
+                });
             }
         } else {
+            // Navigate to Answers Screen (Question Paper)
             router.push({
                 pathname: `/answers/${item.id}` as any,
                 params: {
@@ -93,15 +97,15 @@ export default function ResourceListScreen() {
             });
         }
     };
-
     const renderPdfCard = ({ item }: { item: PdfResource }) => {
         const category = (item.choose || '').trim().toLowerCase();
         const isDirectOpen = DIRECT_OPEN_CATEGORIES.includes(category);
+        const isSharing = loadingId === item.id;
 
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => handleItemPress(item)}
+                onPress={() => handleView(item)}
                 style={styles.cardContainer}
             >
                 <LinearGradient
@@ -124,12 +128,29 @@ export default function ResourceListScreen() {
                         </View>
                     </View>
 
-                    <View style={[styles.actionBtn, isDirectOpen ? styles.btnDownload : styles.btnNavigate]}>
-                        <Ionicons
-                            name={isDirectOpen ? "download-outline" : "chevron-forward"}
-                            size={18}
-                            color={isDirectOpen ? "#4A90E2" : "#FFF"}
-                        />
+                    {/* Action Buttons Row */}
+                    <View style={styles.actionsRow}>
+                        {/* Share Button (Keep existing option) */}
+                        <TouchableOpacity
+                            style={[styles.iconBtn, { marginRight: 8, backgroundColor: 'rgba(74, 226, 100, 0.1)' }]}
+                            onPress={() => sharePdf(item.pdf, item.name, item.id)}
+                            disabled={isSharing}
+                        >
+                            {isSharing ? (
+                                <ActivityIndicator size="small" color="#4ade80" />
+                            ) : (
+                                <Ionicons name="share-social-outline" size={18} color="#4ade80" />
+                            )}
+                        </TouchableOpacity>
+
+                        {/* View Button (New Add) */}
+                        <View style={[styles.iconBtn, isDirectOpen ? styles.btnBlue : styles.btnGray]}>
+                            <Ionicons
+                                name={isDirectOpen ? "eye-outline" : "chevron-forward"}
+                                size={18}
+                                color={isDirectOpen ? "#4A90E2" : "#FFF"}
+                            />
+                        </View>
                     </View>
                 </LinearGradient>
             </TouchableOpacity>
@@ -331,6 +352,12 @@ const styles = StyleSheet.create({
         marginTop: 16,
         fontSize: 16,
     },
+
+    // Updated Button Styles
+    actionsRow: { flexDirection: 'row', alignItems: 'center' },
+    iconBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+    btnBlue: { backgroundColor: 'rgba(74, 144, 226, 0.15)' },
+    btnGray: { backgroundColor: 'rgba(255,255,255,0.1)' },
 
     // Card
     cardContainer: {

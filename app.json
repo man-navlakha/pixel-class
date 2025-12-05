@@ -2,7 +2,7 @@
   "expo": {
     "name": "Pixel Class",
     "slug": "pixelclass",
-    "version": "1.0.0",
+    "version": "1.1.6",
     "orientation": "portrait",
     "icon": "https://ik.imagekit.io/pxc/pixel%20class%20fav%20w-02.png",
     "scheme": "pixelclass",
@@ -10,7 +10,8 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mannavlakha.pixelclass"
+      "bundleIdentifier": "com.mannavlakha.pixelclass",
+      "buildNumber": "1.1.6"
     },
     "android": {
       "adaptiveIcon": {
@@ -41,7 +42,8 @@
           ]
         }
       ],
-      "package": "com.mannavlakha.pixelclass"
+      "package": "com.mannavlakha.pixelclass",
+      "versionCode": 116
     },
     "web": {
       "output": "static",

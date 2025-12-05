@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -160,9 +161,15 @@ export default function HomeScreen() {
                     <Text className="text-white text-xl font-bold mb-4 ml-2">Your Semesters</Text>
                 }
                 ListFooterComponent={
-                    <View className="mt-8 items-center">
-                        <Text className="text-gray-500 text-sm">Made with ❤️ by Pixel Class Teams</Text>
-                        <Text className="text-gray-600 text-xs mt-1">© 2025 Pixel Class. All rights reserved.</Text>
+                    <View className="mt-12 mb-6 items-center">
+                        <Text className="text-neutral-500 text-6xl font-bold tracking-tighter mb-4">Live it up!</Text>
+                        <View className="flex-row items-center">
+                            <Text className="text-neutral-500 text-base">Crafted with </Text>
+                            <Ionicons name="heart" size={16} color="#ef4444" />
+                            <Text className="text-neutral-500 text-base"> by Pixel Class Teams</Text>
+                        </View>
+                        <Text className="text-neutral-600 text-xs mt-2">© 2025 Pixel Class. All rights reserved.</Text>
+                        <Text className="text-neutral-700 text-[10px] mt-1">v{Constants.expoConfig?.version ?? (Constants.manifest as any)?.version ?? '1.0.0'}</Text>
                     </View>
                 }
             />
