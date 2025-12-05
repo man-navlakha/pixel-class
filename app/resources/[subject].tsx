@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
@@ -15,6 +14,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CustomTabBar from '../../components/CustomTabBar';
+import UploadModal from '../../components/UploadModal';
+import { usePdfViewer } from '../../hooks/usePdfViewer';
 import { API_URLS, apiCall } from '../../utils/api';
 
 const MENU_OPTIONS = [
@@ -32,17 +33,26 @@ import { PdfResource } from '../../types';
 
 export default function ResourceListScreen() {
     const router = useRouter();
-    const { subject, courseName } = useLocalSearchParams();
+    const { subject, courseName, sem } = useLocalSearchParams(); // Ensure 'sem' is passed in params
+    const [isUploadVisible, setIsUploadVisible] = useState(false);
+    const [currentUser, setCurrentUser] = useState('');
     const insets = useSafeAreaInsets();
 
+    const { viewPdf, loadingId } = usePdfViewer();
     const [loading, setLoading] = useState(true);
     const [allPdfs, setAllPdfs] = useState<PdfResource[]>([]);
     const [activeTab, setActiveTab] = useState('all');
 
     useEffect(() => {
+        fetchCurrentUser();
         fetchPdfResources();
     }, [subject]);
-
+    const fetchCurrentUser = async () => {
+        try {
+            const me = await apiCall(API_URLS.ME, 'GET');
+            setCurrentUser(me.username);
+        } catch (e) { console.log(e) }
+    };
     const fetchPdfResources = async () => {
         if (!subject) return;
         try {
@@ -68,9 +78,8 @@ export default function ResourceListScreen() {
 
         if (DIRECT_OPEN_CATEGORIES.includes(category)) {
             if (item.pdf) {
-                WebBrowser.openBrowserAsync(item.pdf).catch(err =>
-                    Alert.alert("Error", "Could not open PDF viewer.")
-                );
+                // Use the new hook instead of WebBrowser
+                viewPdf(item.pdf, item.name, item.id);
             } else {
                 Alert.alert("Error", "No PDF link available.");
             }
@@ -204,7 +213,31 @@ export default function ResourceListScreen() {
                     }
                 />
             )}
+            {/* Floating Upload Button */}
+            <TouchableOpacity
+                style={styles.fab}
+                onPress={() => setIsUploadVisible(true)}
+                activeOpacity={0.8}
+            >
+                <LinearGradient
+                    colors={['#4A90E2', '#357ABD']}
+                    style={styles.fabGradient}
+                >
+                    <Ionicons name="add" size={30} color="#FFF" />
+                </LinearGradient>
+            </TouchableOpacity>
 
+            {/* Upload Modal */}
+            <UploadModal
+                isVisible={isUploadVisible}
+                onClose={() => {
+                    setIsUploadVisible(false);
+                    fetchPdfResources(); // Refresh list after upload
+                }}
+                subject={subject as string}
+                sem={sem as string || "1"} // Fallback if sem isn't passed
+                username={currentUser}
+            />
             <CustomTabBar />
         </View>
     );
@@ -362,5 +395,26 @@ const styles = StyleSheet.create({
     },
     btnNavigate: {
         backgroundColor: 'rgba(255,255,255,0.1)',
+    },
+    fab: {
+        position: 'absolute',
+        bottom: 100, // Above tab bar
+        right: 20,
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4.65,
+        elevation: 8,
+        zIndex: 50,
+    },
+    fabGradient: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 28,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

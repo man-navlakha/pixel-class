@@ -52,6 +52,7 @@ export default function RootLayout() {
 
         <Stack.Screen name="auth/login" options={{ headerShown: false }} />
         <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
+        <Stack.Screen name="auth/forgetpassword" options={{ headerShown: false }} />
       </Stack>
 
       {showSplash && (
@@ -85,18 +86,9 @@ const styles = StyleSheet.create({
   logoContainer: {
     width: 120,
     height: 120,
-    backgroundColor: '#1E1E1E',
-    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#333',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 10,
   },
   logoImage: {
     width: '80%',
