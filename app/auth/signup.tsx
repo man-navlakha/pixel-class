@@ -69,7 +69,7 @@ export default function SignupScreen() {
     return (
         <View style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
-            <StatusBar style="light" />
+            <StatusBar style="light" animated />
 
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

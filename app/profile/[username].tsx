@@ -320,7 +320,7 @@ export default function ProfileScreen() {
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <Stack.Screen options={{ headerShown: false }} />
-            <StatusBar style="light" />
+            <StatusBar style="light" animated />
 
             <FlatList
                 data={posts}

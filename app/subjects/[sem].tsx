@@ -89,7 +89,7 @@ export default function SubjectListScreen() {
                     headerShown: false, // Custom header
                 }}
             />
-            <StatusBar style="light" />
+            <StatusBar style="light" animated />
 
             {/* Custom Header */}
             <View style={[styles.header, { paddingTop: insets.top + 10 }]}>

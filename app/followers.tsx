@@ -149,7 +149,7 @@ export default function FollowersScreen() {
                     headerTintColor: '#fff'
                 }}
             />
-            <StatusBar style="light" />
+            <StatusBar style="light" animated />
 
             {loading ? (
                 <ActivityIndicator size="large" color="#4A90E2" style={{ marginTop: 30 }} />

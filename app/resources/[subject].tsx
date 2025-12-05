@@ -130,7 +130,7 @@ export default function ResourceListScreen() {
     return (
         <View style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
-            <StatusBar style="light" />
+            <StatusBar style="light" animated />
 
             {/* Custom Header */}
             <View style={[styles.header, { paddingTop: insets.top + 10 }]}>

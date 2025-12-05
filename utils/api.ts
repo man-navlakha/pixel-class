@@ -1,5 +1,7 @@
 // utils/api.ts
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
+import { Platform } from 'react-native';
+
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://pixel-classes.onrender.com';
 
 export const API_URLS = {
     LOGIN: `${BASE_URL}/api/user/login/`,
@@ -54,6 +56,9 @@ export const apiCall = async (endpoint: string, method: 'POST' | 'GET' | 'PUT', 
 
         return data;
     } catch (error: any) {
+        if (Platform.OS === 'web' && error.message === 'Failed to fetch') {
+            console.error("CORS Error or Network Issue on Web. Ensure backend allows this origin.");
+        }
         throw error;
     }
 };

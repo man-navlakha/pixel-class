@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import * as Notifications from 'expo-notifications';
 import { usePathname, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { AppState, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -13,16 +12,25 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { API_URLS, apiCall } from '../utils/api';
 
-// Configure Notifications
-Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-        shouldShowBanner: true,
-        shouldShowList: true,
-        priority: Notifications.AndroidNotificationPriority.HIGH,
-    }),
-});
+// Dynamically import Notifications only on native to avoid Web warnings
+let Notifications: any;
+if (Platform.OS !== 'web') {
+    try {
+        Notifications = require('expo-notifications');
+        // Configure Notifications
+        Notifications.setNotificationHandler({
+            handleNotification: async () => ({
+                shouldPlaySound: true,
+                shouldSetBadge: true,
+                shouldShowBanner: true,
+                shouldShowList: true,
+                priority: Notifications.AndroidNotificationPriority.HIGH,
+            }),
+        });
+    } catch (e) {
+        console.warn('Failed to load expo-notifications:', e);
+    }
+}
 
 // Tab Item Component for individual animation control
 const TabItem = ({ tab, isActive, onPress }: { tab: any, isActive: boolean, onPress: () => void }) => {
@@ -98,7 +106,9 @@ export default function CustomTabBar() {
     const reconnectInterval = useRef<any>(null);
 
     useEffect(() => {
-        registerForPushNotificationsAsync();
+        if (Platform.OS !== 'web') {
+            registerForPushNotificationsAsync();
+        }
         initializeConnection();
 
         // Handle App State changes (background/foreground)
@@ -134,6 +144,8 @@ export default function CustomTabBar() {
     }, []);
 
     const registerForPushNotificationsAsync = async () => {
+        if (Platform.OS === 'web' || !Notifications) return;
+
         try {
             if (Platform.OS === 'android') {
                 await Notifications.setNotificationChannelAsync('default', {
@@ -233,6 +245,8 @@ export default function CustomTabBar() {
     };
 
     const sendLocalNotification = async (count: number) => {
+        if (Platform.OS === 'web' || !Notifications) return;
+
         // Don't notify if user is already on the chat screen
         if (pathname.startsWith('/chat')) return;
 

@@ -108,7 +108,7 @@ export default function HomeScreen() {
 
     return (
         <View className="flex-1 bg-neutral-900">
-            <StatusBar style="light" />
+            <StatusBar style="light" animated />
 
             <View className="mb-2">
                 <LinearGradient

@@ -6,7 +6,7 @@ import CustomTabBar from '../../components/CustomTabBar';
 export default function TabLayout() {
     return (
         <>
-            <StatusBar style="light" />
+            <StatusBar style="light" animated />
             <Tabs
                 tabBar={() => <CustomTabBar />}
                 screenOptions={{

@@ -223,7 +223,7 @@ export default function SearchScreen() {
 
     return (
         <View style={styles.container}>
-            <StatusBar style="light" />
+            <StatusBar style="light" animated />
             <Text style={styles.headerTitle}>Find Users</Text>
 
             <View style={styles.searchContainer}>

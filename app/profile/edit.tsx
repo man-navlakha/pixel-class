@@ -203,7 +203,7 @@ export default function EditProfileScreen() {
     return (
         <SafeAreaView className="flex-1 bg-[#121212]">
             <Stack.Screen options={{ headerShown: false }} />
-            <StatusBar style="light" />
+            <StatusBar style="light" animated />
 
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 py-4 border-b border-white/10">
