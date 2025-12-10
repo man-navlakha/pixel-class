@@ -260,7 +260,7 @@ export default function ChatInboxScreen() {
 
             {loading ? (
                 <View style={styles.center}>
-                    <ActivityIndicator size="large" color="#4A90E2" />
+                    <ActivityIndicator size="large" color="#4ade80" />
                 </View>
             ) : (
                 <FlatList

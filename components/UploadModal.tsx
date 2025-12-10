@@ -134,7 +134,7 @@ export default function UploadModal({ isVisible, onClose, subject, sem, username
                         <TouchableOpacity onPress={handlePickDocument} style={styles.fileBtn}>
                             {file ? (
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <Ionicons name="document" size={20} color="#4A90E2" />
+                                    <Ionicons name="document" size={20} color="#4ade80" />
                                     <Text style={styles.fileName} numberOfLines={1}>{file.name}</Text>
                                 </View>
                             ) : (
@@ -178,9 +178,9 @@ const styles = StyleSheet.create({
     label: { color: '#CCC', marginBottom: 10, fontWeight: '600' },
     categoryContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
     catChip: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 20, borderWidth: 1, borderColor: '#333', backgroundColor: '#252525' },
-    catChipActive: { borderColor: '#4A90E2', backgroundColor: 'rgba(74, 144, 226, 0.2)' },
+    catChipActive: { borderColor: '#4ade80', backgroundColor: 'rgba(74, 144, 226, 0.2)' },
     catText: { color: '#AAA', fontSize: 12 },
-    catTextActive: { color: '#4A90E2', fontWeight: 'bold' },
+    catTextActive: { color: '#4ade80', fontWeight: 'bold' },
     fileBtn: {
         height: 56, borderRadius: 16, borderWidth: 1, borderColor: '#333',
         backgroundColor: '#252525', justifyContent: 'center', paddingHorizontal: 16, marginBottom: 20,

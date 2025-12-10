@@ -120,6 +120,6 @@ const styles = StyleSheet.create({
     form: { width: '100%' },
     button: { marginBottom: 24 },
     footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
-    linkText: { color: '#4A90E2', fontSize: 14, fontWeight: 'bold' },
+    linkText: { color: '#4ade80', fontSize: 14, fontWeight: 'bold' },
     errorText: { color: '#FF5252', marginBottom: 15, textAlign: 'center' }
 });

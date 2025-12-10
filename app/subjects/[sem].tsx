@@ -102,7 +102,7 @@ export default function SubjectListScreen() {
 
             {loading ? (
                 <View style={styles.center}>
-                    <ActivityIndicator size="large" color="#4A90E2" />
+                    <ActivityIndicator size="large" color="#4ade80" />
                 </View>
             ) : (
                 <FlatList
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
         marginRight: 16,
     },
     indexText: {
-        color: '#4A90E2',
+        color: '#4ade80',
         fontWeight: 'bold',
         fontSize: 18,
     },

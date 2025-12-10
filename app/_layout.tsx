@@ -6,6 +6,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import 'react-native-reanimated';
 import Animated, { FadeOut } from 'react-native-reanimated';
 import Toast from 'react-native-toast-message';
+import { ThemeProvider } from '../contexts/ThemeContext';
 import '../global.css';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -46,32 +47,34 @@ export default function RootLayout() {
   }
 
   return (
-    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    <ThemeProvider>
+      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-        <Stack.Screen name="auth/login" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/forgetpassword" options={{ headerShown: false }} />
-      </Stack>
+          <Stack.Screen name="auth/login" options={{ headerShown: false }} />
+          <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
+          <Stack.Screen name="auth/forgetpassword" options={{ headerShown: false }} />
+        </Stack>
 
-      {showSplash && (
-        <Animated.View
-          exiting={FadeOut.duration(800)}
-          style={styles.splashContainer}
-        >
-          <View style={styles.logoContainer}>
-            <Image
-              source={{ uri: 'https://ik.imagekit.io/pxc/pixel%20class%20fav%20w-02.png' }}
-              style={styles.logoImage}
-              contentFit="contain"
-            />
-          </View>
-          <Text style={styles.appName}>Pixel Class</Text>
-        </Animated.View>
-      )}
-      <Toast />
-    </View>
+        {showSplash && (
+          <Animated.View
+            exiting={FadeOut.duration(800)}
+            style={styles.splashContainer}
+          >
+            <View style={styles.logoContainer}>
+              <Image
+                source={{ uri: 'https://ik.imagekit.io/pxc/pixel%20class%20fav%20w-02.png' }}
+                style={styles.logoImage}
+                contentFit="contain"
+              />
+            </View>
+            <Text style={styles.appName}>Pixel Class</Text>
+          </Animated.View>
+        )}
+        <Toast />
+      </View>
+    </ThemeProvider>
   );
 }
 

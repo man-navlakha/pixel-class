@@ -282,7 +282,7 @@ export default function ProfileScreen() {
                                         disabled={suggestionLoading === item.username}
                                     >
                                         {suggestionLoading === item.username ? (
-                                            <ActivityIndicator size="small" color="#4A90E2" />
+                                            <ActivityIndicator size="small" color="#4ade80" />
                                         ) : (
                                             <Text style={styles.suggestionFollowText}>Follow</Text>
                                         )}
@@ -301,7 +301,7 @@ export default function ProfileScreen() {
 
     const renderPost = ({ item }: { item: any }) => (
         <View style={styles.postCard}>
-            <Ionicons name="document-text" size={24} color="#4A90E2" />
+            <Ionicons name="document-text" size={24} color="#4ade80" />
             <View style={styles.postContent}>
                 <Text style={styles.postTitle} numberOfLines={1}>{item.contant || "Note"}</Text>
                 <Text style={styles.postSub}>{item.sub} • Sem {item.sem}</Text>
@@ -312,15 +312,27 @@ export default function ProfileScreen() {
     if (loading) {
         return (
             <SafeAreaView style={styles.center}>
-                <ActivityIndicator size="large" color="#4A90E2" />
+                <ActivityIndicator size="large" color="#4ade80" />
             </SafeAreaView>
         );
     }
+
+    const isOwnProfile = profile?.username === currentUser;
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <Stack.Screen options={{ headerShown: false }} />
             <StatusBar style="light" animated />
+
+            {/* Settings Icon - Only show on own profile */}
+            {isOwnProfile && (
+                <TouchableOpacity
+                    style={styles.settingsIcon}
+                    onPress={() => router.push('/settings' as any)}
+                >
+                    <Ionicons name="settings-outline" size={24} color="#FFF" />
+                </TouchableOpacity>
+            )}
 
             <FlatList
                 data={posts}
@@ -342,14 +354,14 @@ const styles = StyleSheet.create({
     center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#121212' },
     listContent: { paddingBottom: 20 },
     header: { alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#333', marginBottom: 10 },
-    avatar: { width: 100, height: 100, borderRadius: 50, marginBottom: 12, borderWidth: 2, borderColor: '#4A90E2' },
+    avatar: { width: 100, height: 100, borderRadius: 50, marginBottom: 12, borderWidth: 2, borderColor: '#4ade80' },
     name: { color: '#FFF', fontSize: 24, fontWeight: 'bold' },
     statsRow: { flexDirection: 'row', width: '100%', justifyContent: 'space-around', marginBottom: 24 },
     stat: { alignItems: 'center' },
     statVal: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
     statLabel: { color: '#888', fontSize: 12 },
     actionRow: { flexDirection: 'row', gap: 10, marginBottom: 20 },
-    btnPrimary: { backgroundColor: '#4A90E2', paddingVertical: 10, paddingHorizontal: 30, borderRadius: 20 },
+    btnPrimary: { backgroundColor: '#4ade80', paddingVertical: 10, paddingHorizontal: 30, borderRadius: 20 },
     btnSecondary: { backgroundColor: '#333', paddingVertical: 10, paddingHorizontal: 30, borderRadius: 20 },
     btnOutline: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#FFF' },
     btnText: { color: '#FFF', fontWeight: '600' },
@@ -366,7 +378,7 @@ const styles = StyleSheet.create({
     suggestionsContainer: { width: '100%', marginBottom: 24 },
     suggestionsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingHorizontal: 4 },
     suggestionsTitle: { color: '#FFF', fontSize: 16, fontWeight: '600' },
-    seeAllText: { color: '#4A90E2', fontSize: 14 },
+    seeAllText: { color: '#4ade80', fontSize: 14 },
     suggestionCard: {
         width: 140,
         backgroundColor: '#000',
@@ -388,9 +400,20 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         borderRadius: 6,
         borderWidth: 1,
-        borderColor: '#4A90E2',
+        borderColor: '#4ade80',
         width: '100%',
         alignItems: 'center'
     },
-    suggestionFollowText: { color: '#4A90E2', fontSize: 12, fontWeight: '600' },
+    suggestionFollowText: { color: '#4ade80', fontSize: 12, fontWeight: '600' },
+    settingsIcon: {
+        position: 'absolute',
+        top: 50,
+        right: 20,
+        zIndex: 10,
+        backgroundColor: '#1E1E1E',
+        padding: 10,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#333'
+    },
 });

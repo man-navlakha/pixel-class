@@ -148,7 +148,7 @@ export default function ResourceListScreen() {
                             <Ionicons
                                 name={isDirectOpen ? "eye-outline" : "chevron-forward"}
                                 size={18}
-                                color={isDirectOpen ? "#4A90E2" : "#FFF"}
+                                color={isDirectOpen ? "#4ade80" : "#FFF"}
                             />
                         </View>
                     </View>
@@ -187,7 +187,7 @@ export default function ResourceListScreen() {
                             >
                                 {isActive ? (
                                     <LinearGradient
-                                        colors={['#4A90E2', '#357ABD']}
+                                        colors={['#4ade80', '#357ABD']}
                                         start={{ x: 0, y: 0 }}
                                         end={{ x: 1, y: 1 }}
                                         style={styles.tab}
@@ -215,7 +215,7 @@ export default function ResourceListScreen() {
 
             {loading ? (
                 <View style={styles.center}>
-                    <ActivityIndicator size="large" color="#4A90E2" />
+                    <ActivityIndicator size="large" color="#4ade80" />
                 </View>
             ) : (
                 <FlatList
@@ -241,7 +241,7 @@ export default function ResourceListScreen() {
                 activeOpacity={0.8}
             >
                 <LinearGradient
-                    colors={['#4A90E2', '#357ABD']}
+                    colors={['#4ade80', '#357ABD']}
                     style={styles.fabGradient}
                 >
                     <Ionicons name="add" size={30} color="#FFF" />

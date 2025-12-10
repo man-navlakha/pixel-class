@@ -34,7 +34,7 @@ export default function Input({
                     <Ionicons
                         name={iconName}
                         size={20}
-                        color={isFocused ? '#4A90E2' : '#666'}
+                        color={isFocused ? '#4ade80' : '#666'}
                         style={styles.icon}
                     />
                 )}
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
     },
     inputContainerFocused: {
-        borderColor: '#4A90E2',
+        borderColor: '#4ade80',
         backgroundColor: '#252525',
     },
     inputContainerError: {

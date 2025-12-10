@@ -26,10 +26,10 @@ export default function Button({
     const getBackgroundColor = () => {
         if (disabled) return '#333333';
         switch (variant) {
-            case 'primary': return '#4A90E2';
+            case 'primary': return '#4ade80';
             case 'secondary': return '#333333';
             case 'outline': return 'transparent';
-            default: return '#4A90E2';
+            default: return '#4ade80';
         }
     };
 
@@ -38,14 +38,14 @@ export default function Button({
         switch (variant) {
             case 'primary': return '#FFFFFF';
             case 'secondary': return '#FFFFFF';
-            case 'outline': return '#4A90E2';
+            case 'outline': return '#4ade80';
             default: return '#FFFFFF';
         }
     };
 
     const getBorderColor = () => {
         if (disabled) return 'transparent';
-        if (variant === 'outline') return '#4A90E2';
+        if (variant === 'outline') return '#4ade80';
         return 'transparent';
     };
 

@@ -195,7 +195,7 @@ export default function EditProfileScreen() {
     if (initialLoading) {
         return (
             <SafeAreaView className="flex-1 bg-[#121212] justify-center items-center">
-                <ActivityIndicator size="large" color="#4A90E2" />
+                <ActivityIndicator size="large" color="#4ade80" />
             </SafeAreaView>
         );
     }
@@ -220,14 +220,14 @@ export default function EditProfileScreen() {
                     <TouchableOpacity onPress={pickImage} className="relative">
                         <Image
                             source={{ uri: imagePreview || `https://i.pravatar.cc/150?u=${originalUsername}` }}
-                            className="w-28 h-28 rounded-full border-2 border-[#4A90E2]"
+                            className="w-28 h-28 rounded-full border-2 border-[#4ade80]"
                         />
-                        <View className="absolute bottom-0 right-0 bg-[#4A90E2] p-2 rounded-full border-4 border-[#121212]">
+                        <View className="absolute bottom-0 right-0 bg-[#4ade80] p-2 rounded-full border-4 border-[#121212]">
                             <Ionicons name="camera" size={16} color="#FFF" />
                         </View>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={pickImage}>
-                        <Text className="text-[#4A90E2] mt-3 font-semibold">Change Photo</Text>
+                        <Text className="text-[#4ade80] mt-3 font-semibold">Change Photo</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -236,7 +236,7 @@ export default function EditProfileScreen() {
                     <Text className="text-white/70 mb-2 ml-1 text-sm font-medium">Username</Text>
                     <View className="relative">
                         <TextInput
-                            className="bg-white/5 rounded-xl px-4 py-3.5 text-white border border-white/10 focus:border-[#4A90E2]"
+                            className="bg-white/5 rounded-xl px-4 py-3.5 text-white border border-white/10 focus:border-[#4ade80]"
                             value={username}
                             onChangeText={(text) => setUsername(text.replace(/\s/g, ""))}
                             placeholder="New Username"
@@ -262,7 +262,7 @@ export default function EditProfileScreen() {
                 <TouchableOpacity
                     className={`py-4 rounded-xl items-center ${(loading || ["checking", "taken", "forbidden", "short"].includes(usernameStatus))
                         ? 'bg-white/10 opacity-50'
-                        : 'bg-[#4A90E2]'
+                        : 'bg-[#4ade80]'
                         }`}
                     onPress={handleProfileEdit}
                     disabled={loading || ["checking", "taken", "forbidden", "short"].includes(usernameStatus)}

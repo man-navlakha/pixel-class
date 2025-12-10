@@ -27,7 +27,7 @@ export default function LogoutScreen() {
 
     return (
         <View style={styles.container}>
-            <ActivityIndicator size="large" color="#4A90E2" />
+            <ActivityIndicator size="large" color="#4ade80" />
             <Text style={styles.text}>Logging out...</Text>
         </View>
     );

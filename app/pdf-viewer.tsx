@@ -54,7 +54,7 @@ export default function PdfViewerScreen() {
                 startInLoadingState={true}
                 renderLoading={() => (
                     <View style={styles.loadingOverlay}>
-                        <ActivityIndicator size="large" color="#4A90E2" />
+                        <ActivityIndicator size="large" color="#4ade80" />
                     </View>
                 )}
                 // Fix for Android not allowing mixed content if your PDF server is HTTP

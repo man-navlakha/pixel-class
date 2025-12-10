@@ -152,7 +152,7 @@ export default function FollowersScreen() {
             <StatusBar style="light" animated />
 
             {loading ? (
-                <ActivityIndicator size="large" color="#4A90E2" style={{ marginTop: 30 }} />
+                <ActivityIndicator size="large" color="#4ade80" style={{ marginTop: 30 }} />
             ) : (
                 <FlatList
                     data={users}
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     username: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
     fullname: { color: '#AAA', fontSize: 14 },
     btn: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, minWidth: 90, alignItems: 'center' },
-    btnFollow: { backgroundColor: '#4A90E2' },
+    btnFollow: { backgroundColor: '#4ade80' },
     btnUnfollow: { backgroundColor: '#FF5252' },
     btnText: { color: '#FFF', fontWeight: '600', fontSize: 13 },
     empty: { color: '#666', textAlign: 'center', marginTop: 50, fontSize: 16 }

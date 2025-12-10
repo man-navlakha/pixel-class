@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     },
     activeBackground: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: '#4A90E2',
+        backgroundColor: '#4ade80',
         borderRadius: 22,
         opacity: 0.2,
         transform: [{ scale: 1.2 }],

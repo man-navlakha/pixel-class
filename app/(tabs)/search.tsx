@@ -240,7 +240,7 @@ export default function SearchScreen() {
 
             {loading ? (
                 <View style={{ marginTop: 20 }}>
-                    <ActivityIndicator size="large" color="#4A90E2" />
+                    <ActivityIndicator size="large" color="#4ade80" />
                 </View>
             ) : (
                 <FlatList

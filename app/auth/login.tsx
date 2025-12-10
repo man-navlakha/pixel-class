@@ -118,10 +118,10 @@ const styles = StyleSheet.create({
     subtitle: { fontSize: 16, color: '#AAAAAA' },
     form: { width: '100%' },
     forgotPassword: { alignSelf: 'flex-end', marginBottom: 24 },
-    forgotPasswordText: { color: '#4A90E2', fontSize: 14, fontWeight: '500' },
+    forgotPasswordText: { color: '#4ade80', fontSize: 14, fontWeight: '500' },
     button: { marginBottom: 24 },
     footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
     footerText: { color: '#AAAAAA', fontSize: 14 },
-    linkText: { color: '#4A90E2', fontSize: 14, fontWeight: 'bold' },
+    linkText: { color: '#4ade80', fontSize: 14, fontWeight: 'bold' },
     errorText: { color: '#FF5252', marginBottom: 15, textAlign: 'center' }
 });

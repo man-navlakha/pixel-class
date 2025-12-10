@@ -89,7 +89,7 @@ export default function AnswerListScreen() {
                             onPress={() => handleView(item.pdf, `Answer - ${item.name}`)}
                             activeOpacity={0.8}
                         >
-                            <Ionicons name="eye-outline" size={20} color="#4A90E2" />
+                            <Ionicons name="eye-outline" size={20} color="#4ade80" />
                             <Text style={styles.btnTextBlue}>View</Text>
                         </TouchableOpacity>
 
@@ -136,7 +136,7 @@ export default function AnswerListScreen() {
                         style={styles.questionBtn}
                         onPress={() => handleView(questionPdf as string, 'Question Paper')}
                     >
-                        <Ionicons name="document-text" size={16} color="#4A90E2" />
+                        <Ionicons name="document-text" size={16} color="#4ade80" />
                         <Text style={styles.questionBtnText}>View Question Paper</Text>
                     </TouchableOpacity>
                 )}
@@ -144,7 +144,7 @@ export default function AnswerListScreen() {
 
             {loading ? (
                 <View style={styles.center}>
-                    <ActivityIndicator size="large" color="#4A90E2" />
+                    <ActivityIndicator size="large" color="#4ade80" />
                 </View>
             ) : (
                 <FlatList
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(74, 144, 226, 0.2)',
     },
     questionBtnText: {
-        color: '#4A90E2',
+        color: '#4ade80',
         marginLeft: 8,
         fontWeight: '600',
         fontSize: 13,
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: 22,
-        backgroundColor: '#4A90E2',
+        backgroundColor: '#4ade80',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 12,
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(74, 226, 100, 0.3)',
     },
     btnTextBlue: {
-        color: '#4A90E2',
+        color: '#4ade80',
         fontWeight: '600',
         marginLeft: 8,
     },
