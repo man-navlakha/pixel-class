@@ -64,14 +64,21 @@ export default function ChatInboxScreen() {
             const res = await apiCall(API_URLS.ME, 'GET');
             setCurrentUser(res.username);
             connectWebSocket(); // Connect after getting user
-        } catch (e) {
-            console.log("Error fetching user", e);
+        } catch (error: any) {
+            console.log("Error fetching user", error);
             setLoading(false);
+
+            // If session expired, redirect to login
+            if (error.message === 'Session expired') {
+                router.replace('/auth/login');
+            }
         }
     };
 
     const connectWebSocket = async () => {
         try {
+            console.log("App has come to the foreground! Reconnecting WS...");
+
             // 1. Get Short-lived WS Token
             // Construct URL manually since apiCall wrapper might not handle this specific endpoint structure easily
             const tokenUrl = `${API_URLS.ME.replace('me/', '')}ws-token/`;
@@ -121,10 +128,15 @@ export default function ChatInboxScreen() {
                 setRefreshing(false);
             };
 
-        } catch (error) {
-            console.error("WS Setup Error", error);
+        } catch (error: any) {
+            console.log("Auth check failed or user offline", error);
             setLoading(false);
             setRefreshing(false);
+
+            // If session expired, redirect to login
+            if (error.message === 'Session expired') {
+                router.replace('/auth/login');
+            }
         }
     };
 
