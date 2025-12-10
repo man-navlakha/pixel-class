@@ -15,7 +15,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CustomTabBar from '../../components/CustomTabBar';
 import UploadModal from '../../components/UploadModal';
+import { useTheme } from '../../contexts/ThemeContext';
 import { usePdfViewer } from '../../hooks/usePdfViewer';
+import { PdfResource } from '../../types';
 import { API_URLS, apiCall } from '../../utils/api';
 
 const MENU_OPTIONS = [
@@ -29,15 +31,13 @@ const MENU_OPTIONS = [
 
 const DIRECT_OPEN_CATEGORIES = ['notes', 'exam_papper', 'practical'];
 
-import { PdfResource } from '../../types';
-
 export default function ResourceListScreen() {
     const router = useRouter();
-    const { subject, courseName, sem } = useLocalSearchParams(); // Ensure 'sem' is passed in params
+    const { subject, courseName, sem } = useLocalSearchParams();
     const [isUploadVisible, setIsUploadVisible] = useState(false);
     const [currentUser, setCurrentUser] = useState('');
     const insets = useSafeAreaInsets();
-
+    const { isDarkMode } = useTheme();
 
     const { sharePdf, loadingId } = usePdfViewer();
     const [loading, setLoading] = useState(true);
@@ -48,12 +48,14 @@ export default function ResourceListScreen() {
         fetchCurrentUser();
         fetchPdfResources();
     }, [subject]);
+
     const fetchCurrentUser = async () => {
         try {
             const me = await apiCall(API_URLS.ME, 'GET');
             setCurrentUser(me.username);
         } catch (e) { console.log(e) }
     };
+
     const fetchPdfResources = async () => {
         if (!subject) return;
         try {
@@ -74,12 +76,10 @@ export default function ResourceListScreen() {
         return allPdfs.filter(item => (item.choose || '').trim().toLowerCase() === activeTab);
     }, [allPdfs, activeTab]);
 
-
     const handleView = (item: PdfResource) => {
         const category = (item.choose || '').trim().toLowerCase();
 
         if (DIRECT_OPEN_CATEGORIES.includes(category)) {
-            // Navigate to PDF Viewer
             if (item.pdf) {
                 router.push({
                     pathname: '/pdf-viewer',
@@ -87,7 +87,6 @@ export default function ResourceListScreen() {
                 });
             }
         } else {
-            // Navigate to Answers Screen (Question Paper)
             router.push({
                 pathname: `/answers/${item.id}` as any,
                 params: {
@@ -97,6 +96,7 @@ export default function ResourceListScreen() {
             });
         }
     };
+
     const renderPdfCard = ({ item }: { item: PdfResource }) => {
         const category = (item.choose || '').trim().toLowerCase();
         const isDirectOpen = DIRECT_OPEN_CATEGORIES.includes(category);
@@ -109,30 +109,30 @@ export default function ResourceListScreen() {
                 style={styles.cardContainer}
             >
                 <LinearGradient
-                    colors={['#2A2A2A', '#1A1A1A']}
+                    colors={isDarkMode ? ['#2A2A2A', '#1A1A1A'] : ['#ffffff', '#f3f4f6']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    style={styles.card}
+                    style={[styles.card, { borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#e5e7eb' }]}
                 >
                     <View style={styles.cardLeft}>
-                        <View style={styles.cardIcon}>
+                        <View style={[styles.cardIcon, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#f3f4f6' }]}>
                             <Text style={styles.emojiIcon}>
                                 {isDirectOpen ? '📄' : '❓'}
                             </Text>
                         </View>
                         <View style={styles.cardContent}>
-                            <Text style={styles.cardTitle} numberOfLines={1}>{item.name}</Text>
-                            <Text style={styles.cardSubtitle}>
+                            <Text style={[styles.cardTitle, { color: isDarkMode ? '#FFF' : '#111827' }]} numberOfLines={1}>
+                                {item.name}
+                            </Text>
+                            <Text style={[styles.cardSubtitle, { color: isDarkMode ? '#9ca3af' : '#6b7280' }]}>
                                 {item.username || 'Admin'} • {item.year || '2025'}
                             </Text>
                         </View>
                     </View>
 
-                    {/* Action Buttons Row */}
                     <View style={styles.actionsRow}>
-                        {/* Share Button (Keep existing option) */}
                         <TouchableOpacity
-                            style={[styles.iconBtn, { marginRight: 8, backgroundColor: 'rgba(74, 226, 100, 0.1)' }]}
+                            style={[styles.iconBtn, styles.shareBtn]}
                             onPress={() => sharePdf(item.pdf, item.name, item.id)}
                             disabled={isSharing}
                         >
@@ -143,12 +143,11 @@ export default function ResourceListScreen() {
                             )}
                         </TouchableOpacity>
 
-                        {/* View Button (New Add) */}
-                        <View style={[styles.iconBtn, isDirectOpen ? styles.btnBlue : styles.btnGray]}>
+                        <View style={[styles.iconBtn, isDirectOpen ? styles.btnBlue : (isDarkMode ? styles.btnGrayDark : styles.btnGrayLight)]}>
                             <Ionicons
                                 name={isDirectOpen ? "eye-outline" : "chevron-forward"}
                                 size={18}
-                                color={isDirectOpen ? "#4ade80" : "#FFF"}
+                                color={isDirectOpen ? "#4ade80" : (isDarkMode ? "#FFF" : "#6b7280")}
                             />
                         </View>
                     </View>
@@ -158,16 +157,22 @@ export default function ResourceListScreen() {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#f9fafb' }]}>
             <Stack.Screen options={{ headerShown: false }} />
-            <StatusBar style="light" animated />
+            <StatusBar style="auto" animated />
 
             {/* Custom Header */}
-            <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-                    <Ionicons name="arrow-back" size={24} color="#FFF" />
+            <View style={[styles.header, {
+                paddingTop: insets.top + 10,
+                backgroundColor: isDarkMode ? '#121212' : '#f9fafb'
+            }]}>
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    style={[styles.backBtn, { backgroundColor: isDarkMode ? '#252525' : '#e5e7eb' }]}
+                >
+                    <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#FFF" : "#000"} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle} numberOfLines={1}>
+                <Text style={[styles.headerTitle, { color: isDarkMode ? '#FFF' : '#111827' }]} numberOfLines={1}>
                     {typeof subject === 'string' ? subject : 'Resources'}
                 </Text>
                 <View style={{ width: 40 }} />
@@ -183,7 +188,7 @@ export default function ResourceListScreen() {
                             <TouchableOpacity
                                 onPress={() => setActiveTab(item.key)}
                                 activeOpacity={0.8}
-                                style={[styles.tabWrapper]}
+                                style={styles.tabWrapper}
                             >
                                 {isActive ? (
                                     <LinearGradient
@@ -192,13 +197,16 @@ export default function ResourceListScreen() {
                                         end={{ x: 1, y: 1 }}
                                         style={styles.tab}
                                     >
-                                        <Text style={[styles.tabText, styles.activeTabText]}>
+                                        <Text style={styles.activeTabText}>
                                             {item.label}
                                         </Text>
                                     </LinearGradient>
                                 ) : (
-                                    <View style={[styles.tab, styles.inactiveTab]}>
-                                        <Text style={styles.tabText}>
+                                    <View style={[styles.tab, styles.inactiveTab, {
+                                        backgroundColor: isDarkMode ? '#1E1E1E' : '#e5e7eb',
+                                        borderColor: isDarkMode ? '#333' : '#d1d5db'
+                                    }]}>
+                                        <Text style={[styles.tabText, { color: isDarkMode ? '#888' : '#6b7280' }]}>
                                             {item.label}
                                         </Text>
                                     </View>
@@ -222,18 +230,22 @@ export default function ResourceListScreen() {
                     data={filteredData}
                     renderItem={renderPdfCard}
                     keyExtractor={(item) => item.id.toString()}
-                    contentContainerStyle={[
-                        styles.listContent,
-                        { paddingBottom: 100 + insets.bottom }
-                    ]}
+                    contentContainerStyle={{
+                        padding: 20,
+                        paddingTop: 0,
+                        paddingBottom: 100 + insets.bottom
+                    }}
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
-                            <Ionicons name="document-text-outline" size={64} color="#333" />
-                            <Text style={styles.emptyText}>No documents found.</Text>
+                            <Ionicons name="document-text-outline" size={64} color={isDarkMode ? "#333" : "#9ca3af"} />
+                            <Text style={[styles.emptyText, { color: isDarkMode ? '#888' : '#6b7280' }]}>
+                                No documents found.
+                            </Text>
                         </View>
                     }
                 />
             )}
+
             {/* Floating Upload Button */}
             <TouchableOpacity
                 style={styles.fab}
@@ -253,10 +265,10 @@ export default function ResourceListScreen() {
                 isVisible={isUploadVisible}
                 onClose={() => {
                     setIsUploadVisible(false);
-                    fetchPdfResources(); // Refresh list after upload
+                    fetchPdfResources();
                 }}
                 subject={subject as string}
-                sem={sem as string || "1"} // Fallback if sem isn't passed
+                sem={sem as string || "1"}
                 username={currentUser}
             />
             <CustomTabBar />
@@ -267,7 +279,6 @@ export default function ResourceListScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#121212',
     },
     header: {
         flexDirection: 'row',
@@ -275,19 +286,16 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingBottom: 20,
-        backgroundColor: '#121212',
         zIndex: 10,
     },
     backBtn: {
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: '#252525',
         justifyContent: 'center',
         alignItems: 'center',
     },
     headerTitle: {
-        color: '#FFF',
         fontSize: 18,
         fontWeight: 'bold',
         flex: 1,
@@ -323,41 +331,17 @@ const styles = StyleSheet.create({
         borderRadius: 18,
     },
     inactiveTab: {
-        backgroundColor: '#1E1E1E',
         borderWidth: 1,
-        borderColor: '#333',
     },
     tabText: {
-        color: '#888',
         fontWeight: '600',
         fontSize: 13,
     },
     activeTabText: {
         color: '#FFF',
         fontWeight: 'bold',
+        fontSize: 13,
     },
-
-    // List
-    listContent: {
-        padding: 20,
-        paddingTop: 0,
-    },
-    emptyContainer: {
-        alignItems: 'center',
-        marginTop: 100,
-        opacity: 0.5,
-    },
-    emptyText: {
-        color: '#888',
-        marginTop: 16,
-        fontSize: 16,
-    },
-
-    // Updated Button Styles
-    actionsRow: { flexDirection: 'row', alignItems: 'center' },
-    iconBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
-    btnBlue: { backgroundColor: 'rgba(74, 144, 226, 0.15)' },
-    btnGray: { backgroundColor: 'rgba(255,255,255,0.1)' },
 
     // Card
     cardContainer: {
@@ -365,9 +349,9 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
+        shadowOpacity: 0.1,
         shadowRadius: 8,
-        elevation: 5,
+        elevation: 3,
     },
     card: {
         flexDirection: 'row',
@@ -376,7 +360,6 @@ const styles = StyleSheet.create({
         padding: 16,
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.05)',
     },
     cardLeft: {
         flexDirection: 'row',
@@ -388,7 +371,6 @@ const styles = StyleSheet.create({
         width: 48,
         height: 48,
         borderRadius: 16,
-        backgroundColor: 'rgba(255,255,255,0.05)',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 16,
@@ -400,32 +382,56 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     cardTitle: {
-        color: '#FFF',
         fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 4,
     },
     cardSubtitle: {
-        color: '#888',
         fontSize: 12,
         fontWeight: '500',
     },
-    actionBtn: {
+
+    // Actions
+    actionsRow: {
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    iconBtn: {
         width: 36,
         height: 36,
         borderRadius: 18,
         justifyContent: 'center',
+        alignItems: 'center'
+    },
+    shareBtn: {
+        backgroundColor: 'rgba(74, 226, 100, 0.1)',
+        marginRight: 8
+    },
+    btnBlue: {
+        backgroundColor: 'rgba(74, 144, 226, 0.15)'
+    },
+    btnGrayDark: {
+        backgroundColor: 'rgba(255,255,255,0.1)'
+    },
+    btnGrayLight: {
+        backgroundColor: '#e5e7eb'
+    },
+
+    // Empty
+    emptyContainer: {
         alignItems: 'center',
+        marginTop: 100,
+        opacity: 0.5,
     },
-    btnDownload: {
-        backgroundColor: 'rgba(74, 144, 226, 0.15)',
+    emptyText: {
+        marginTop: 16,
+        fontSize: 16,
     },
-    btnNavigate: {
-        backgroundColor: 'rgba(255,255,255,0.1)',
-    },
+
+    // FAB
     fab: {
         position: 'absolute',
-        bottom: 100, // Above tab bar
+        bottom: 100,
         right: 20,
         width: 56,
         height: 56,

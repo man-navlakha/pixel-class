@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CustomTabBar from '../../components/CustomTabBar';
-import { usePdfViewer } from '../../hooks/usePdfViewer'; // Import hook
+import { useTheme } from '../../contexts/ThemeContext';
+import { usePdfViewer } from '../../hooks/usePdfViewer';
 import { API_URLS, apiCall } from '../../utils/api';
 
 interface AnswerPdf {
@@ -27,11 +28,11 @@ export default function AnswerListScreen() {
     const router = useRouter();
     const { id, title, questionPdf } = useLocalSearchParams();
     const insets = useSafeAreaInsets();
+    const { isDarkMode } = useTheme();
 
     const [loading, setLoading] = useState(true);
     const [answers, setAnswers] = useState<AnswerPdf[]>([]);
 
-    // Init Hook: use sharePdf for sharing, manually nav to viewer for viewing
     const { sharePdf, loadingId } = usePdfViewer();
 
     useEffect(() => {
@@ -51,7 +52,6 @@ export default function AnswerListScreen() {
         }
     };
 
-    // Navigation helper for the PDF Viewer
     const handleView = (uri: string, docTitle: string) => {
         router.push({
             pathname: '/pdf-viewer',
@@ -65,36 +65,45 @@ export default function AnswerListScreen() {
         return (
             <View style={styles.cardContainer}>
                 <LinearGradient
-                    colors={['#2A2A2A', '#1A1A1A']}
+                    colors={isDarkMode ? ['#2A2A2A', '#1A1A1A'] : ['#ffffff', '#f3f4f6']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    style={styles.card}
+                    style={[styles.card, { borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#e5e7eb' }]}
                 >
                     <View style={styles.cardHeader}>
-                        <View style={styles.avatar}>
+                        <View style={[styles.avatar, { borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }]}>
                             <Text style={styles.avatarText}>
                                 {item.name ? item.name.charAt(0).toUpperCase() : 'U'}
                             </Text>
                         </View>
                         <View style={styles.headerInfo}>
-                            <Text style={styles.authorName}>{item.name || 'Unknown User'}</Text>
-                            <Text style={styles.description} numberOfLines={2}>{item.contant || 'No description provided'}</Text>
+                            <Text style={[styles.authorName, { color: isDarkMode ? '#FFF' : '#111827' }]}>
+                                {item.name || 'Unknown User'}
+                            </Text>
+                            <Text style={[styles.description, { color: isDarkMode ? '#AAA' : '#6b7280' }]} numberOfLines={2}>
+                                {item.contant || 'No description provided'}
+                            </Text>
                         </View>
                     </View>
 
-                    {/* Two Buttons: View & Share */}
                     <View style={styles.actionRow}>
                         <TouchableOpacity
-                            style={[styles.actionBtn, styles.btnView]}
+                            style={[styles.actionBtn, styles.btnView, {
+                                backgroundColor: isDarkMode ? 'rgba(74, 144, 226, 0.1)' : 'rgba(74, 144, 226, 0.05)',
+                                borderColor: isDarkMode ? 'rgba(74, 144, 226, 0.3)' : 'rgba(74, 144, 226, 0.2)'
+                            }]}
                             onPress={() => handleView(item.pdf, `Answer - ${item.name}`)}
                             activeOpacity={0.8}
                         >
                             <Ionicons name="eye-outline" size={20} color="#4ade80" />
-                            <Text style={styles.btnTextBlue}>View</Text>
+                            <Text style={styles.btnText}>View</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            style={[styles.actionBtn, styles.btnShare]}
+                            style={[styles.actionBtn, styles.btnShare, {
+                                backgroundColor: isDarkMode ? 'rgba(74, 226, 100, 0.1)' : 'rgba(74, 226, 100, 0.05)',
+                                borderColor: isDarkMode ? 'rgba(74, 226, 100, 0.3)' : 'rgba(74, 226, 100, 0.2)'
+                            }]}
                             onPress={() => sharePdf(item.pdf, `Answer - ${item.name}`, item.id)}
                             activeOpacity={0.8}
                             disabled={isSharing}
@@ -104,7 +113,7 @@ export default function AnswerListScreen() {
                             ) : (
                                 <>
                                     <Ionicons name="share-social-outline" size={20} color="#4ade80" />
-                                    <Text style={styles.btnTextGreen}>Share</Text>
+                                    <Text style={styles.btnText}>Share</Text>
                                 </>
                             )}
                         </TouchableOpacity>
@@ -115,25 +124,34 @@ export default function AnswerListScreen() {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#f9fafb' }]}>
             <Stack.Screen options={{ headerShown: false }} />
-            <StatusBar style="light" />
+            <StatusBar style="auto" />
 
             {/* Custom Header */}
-            <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-                    <Ionicons name="arrow-back" size={24} color="#FFF" />
+            <View style={[styles.header, {
+                paddingTop: insets.top + 10,
+                backgroundColor: isDarkMode ? '#121212' : '#f9fafb'
+            }]}>
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    style={[styles.backBtn, { backgroundColor: isDarkMode ? '#252525' : '#e5e7eb' }]}
+                >
+                    <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#FFF" : "#000"} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Solutions</Text>
+                <Text style={[styles.headerTitle, { color: isDarkMode ? '#FFF' : '#111827' }]}>Solutions</Text>
                 <View style={{ width: 40 }} />
             </View>
 
             {/* Question Info Section */}
-            <View style={styles.questionSection}>
-                <Text style={styles.questionTitle}>{title}</Text>
+            <View style={[styles.questionSection, { borderBottomColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#e5e7eb' }]}>
+                <Text style={[styles.questionTitle, { color: isDarkMode ? '#FFF' : '#111827' }]}>{title}</Text>
                 {questionPdf && (
                     <TouchableOpacity
-                        style={styles.questionBtn}
+                        style={[styles.questionBtn, {
+                            backgroundColor: isDarkMode ? 'rgba(74, 144, 226, 0.1)' : 'rgba(74, 144, 226, 0.05)',
+                            borderColor: isDarkMode ? 'rgba(74, 144, 226, 0.2)' : 'rgba(74, 144, 226, 0.15)'
+                        }]}
                         onPress={() => handleView(questionPdf as string, 'Question Paper')}
                     >
                         <Ionicons name="document-text" size={16} color="#4ade80" />
@@ -156,8 +174,10 @@ export default function AnswerListScreen() {
                     ]}
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
-                            <Ionicons name="file-tray-outline" size={64} color="#333" />
-                            <Text style={styles.emptyText}>No solutions uploaded yet.</Text>
+                            <Ionicons name="file-tray-outline" size={64} color={isDarkMode ? "#333" : "#9ca3af"} />
+                            <Text style={[styles.emptyText, { color: isDarkMode ? '#888' : '#6b7280' }]}>
+                                No solutions uploaded yet.
+                            </Text>
                         </View>
                     }
                     renderItem={renderAnswerCard}
@@ -172,7 +192,6 @@ export default function AnswerListScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#121212',
     },
     header: {
         flexDirection: 'row',
@@ -180,19 +199,16 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingBottom: 20,
-        backgroundColor: '#121212',
         zIndex: 10,
     },
     backBtn: {
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: '#252525',
         justifyContent: 'center',
         alignItems: 'center',
     },
     headerTitle: {
-        color: '#FFF',
         fontSize: 18,
         fontWeight: 'bold',
     },
@@ -208,11 +224,9 @@ const styles = StyleSheet.create({
         paddingTop: 0,
         paddingBottom: 20,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255,255,255,0.05)',
         marginBottom: 10,
     },
     questionTitle: {
-        color: '#FFF',
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 12,
@@ -221,13 +235,11 @@ const styles = StyleSheet.create({
     questionBtn: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(74, 144, 226, 0.1)',
         paddingVertical: 8,
         paddingHorizontal: 12,
         borderRadius: 8,
         alignSelf: 'flex-start',
         borderWidth: 1,
-        borderColor: 'rgba(74, 144, 226, 0.2)',
     },
     questionBtnText: {
         color: '#4ade80',
@@ -246,7 +258,6 @@ const styles = StyleSheet.create({
         opacity: 0.5,
     },
     emptyText: {
-        color: '#888',
         marginTop: 16,
         fontSize: 16,
     },
@@ -257,15 +268,14 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
+        shadowOpacity: 0.1,
         shadowRadius: 8,
-        elevation: 5,
+        elevation: 3,
     },
     card: {
         borderRadius: 20,
         padding: 16,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.05)',
     },
     cardHeader: {
         flexDirection: 'row',
@@ -280,7 +290,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginRight: 12,
         borderWidth: 2,
-        borderColor: 'rgba(255,255,255,0.1)',
     },
     avatarText: {
         color: '#FFF',
@@ -292,17 +301,15 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     authorName: {
-        color: '#FFF',
         fontWeight: 'bold',
         fontSize: 15,
         marginBottom: 2,
     },
     description: {
-        color: '#AAA',
         fontSize: 13,
     },
 
-    // New Action Buttons
+    // Action Buttons
     actionRow: {
         flexDirection: 'row',
         gap: 12,
@@ -317,20 +324,9 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         borderWidth: 1,
     },
-    btnView: {
-        backgroundColor: 'rgba(74, 144, 226, 0.1)',
-        borderColor: 'rgba(74, 144, 226, 0.3)',
-    },
-    btnShare: {
-        backgroundColor: 'rgba(74, 226, 100, 0.1)',
-        borderColor: 'rgba(74, 226, 100, 0.3)',
-    },
-    btnTextBlue: {
-        color: '#4ade80',
-        fontWeight: '600',
-        marginLeft: 8,
-    },
-    btnTextGreen: {
+    btnView: {},
+    btnShare: {},
+    btnText: {
         color: '#4ade80',
         fontWeight: '600',
         marginLeft: 8,

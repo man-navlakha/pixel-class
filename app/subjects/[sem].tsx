@@ -14,14 +14,15 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CustomTabBar from '../../components/CustomTabBar';
-import { API_URLS, apiCall } from '../../utils/api';
-
+import { useTheme } from '../../contexts/ThemeContext';
 import { Subject } from '../../types';
+import { API_URLS, apiCall } from '../../utils/api';
 
 export default function SubjectListScreen() {
     const router = useRouter();
     const { sem, courseName } = useLocalSearchParams();
     const insets = useSafeAreaInsets();
+    const { isDarkMode } = useTheme();
 
     const [loading, setLoading] = useState(true);
     const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -61,42 +62,55 @@ export default function SubjectListScreen() {
             style={styles.cardContainer}
         >
             <LinearGradient
-                colors={['#2A2A2A', '#1A1A1A']}
+                colors={isDarkMode ? ['#2A2A2A', '#1A1A1A'] : ['#ffffff', '#f3f4f6']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={styles.card}
+                style={[styles.card, { borderColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#e5e7eb' }]}
             >
                 <View style={styles.cardLeft}>
-                    <View style={styles.iconContainer}>
+                    <View style={[styles.iconContainer, { backgroundColor: isDarkMode ? 'rgba(74, 144, 226, 0.1)' : 'rgba(74, 144, 226, 0.1)' }]}>
                         <Text style={styles.indexText}>{String(index + 1).padStart(2, '0')}</Text>
                     </View>
                     <View style={styles.textContainer}>
-                        <Text style={styles.subjectName} numberOfLines={1}>{item.name}</Text>
-                        <Text style={styles.subjectCode}>Semester {item.sem} • {courseName || "B.C.A"}</Text>
+                        <Text style={[styles.subjectName, { color: isDarkMode ? '#FFF' : '#111827' }]} numberOfLines={1}>
+                            {item.name}
+                        </Text>
+                        <Text style={[styles.subjectCode, { color: isDarkMode ? '#9ca3af' : '#6b7280' }]}>
+                            Semester {item.sem} • {courseName || "B.C.A"}
+                        </Text>
                     </View>
                 </View>
-                <View style={styles.arrowBtn}>
-                    <Ionicons name="arrow-forward" size={20} color="#FFF" />
+                <View style={[styles.arrowBtn, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#e5e7eb' }]}>
+                    <Ionicons name="arrow-forward" size={20} color={isDarkMode ? "#FFF" : "#000"} />
                 </View>
             </LinearGradient>
         </TouchableOpacity>
     );
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#f9fafb' }]}>
             <Stack.Screen
                 options={{
-                    headerShown: false, // Custom header
+                    headerShown: false,
                 }}
             />
-            <StatusBar style="light" animated />
+            <StatusBar style="auto" animated />
 
             {/* Custom Header */}
-            <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-                    <Ionicons name="arrow-back" size={24} color="#FFF" />
+            <View style={[styles.header, {
+                paddingTop: insets.top + 10,
+                backgroundColor: isDarkMode ? '#121212' : '#f9fafb',
+                borderBottomColor: isDarkMode ? '#333' : '#e5e7eb'
+            }]}>
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    style={[styles.backBtn, { backgroundColor: isDarkMode ? '#252525' : '#e5e7eb' }]}
+                >
+                    <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#FFF" : "#000"} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Semester {sem}</Text>
+                <Text style={[styles.headerTitle, { color: isDarkMode ? '#FFF' : '#111827' }]}>
+                    Semester {sem}
+                </Text>
                 <View style={{ width: 40 }} />
             </View>
 
@@ -109,20 +123,22 @@ export default function SubjectListScreen() {
                     data={subjects}
                     renderItem={renderSubjectItem}
                     keyExtractor={(item) => item.id.toString()}
-                    contentContainerStyle={[
-                        styles.listContent,
-                        { paddingBottom: 100 + insets.bottom } // Extra padding for tab bar
-                    ]}
+                    contentContainerStyle={{
+                        padding: 20,
+                        paddingTop: 10,
+                        paddingBottom: 100 + insets.bottom
+                    }}
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
-                            <Ionicons name="library-outline" size={64} color="#333" />
-                            <Text style={styles.emptyText}>No subjects found.</Text>
+                            <Ionicons name="library-outline" size={64} color={isDarkMode ? "#333" : "#9ca3af"} />
+                            <Text style={[styles.emptyText, { color: isDarkMode ? '#888' : '#6b7280' }]}>
+                                No subjects found.
+                            </Text>
                         </View>
                     }
                 />
             )}
 
-            {/* Floating Tab Bar */}
             <CustomTabBar />
         </View>
     );
@@ -131,7 +147,6 @@ export default function SubjectListScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#121212',
     },
     header: {
         flexDirection: 'row',
@@ -139,19 +154,16 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingBottom: 20,
-        backgroundColor: '#121212',
         zIndex: 10,
     },
     backBtn: {
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: '#252525',
         justifyContent: 'center',
         alignItems: 'center',
     },
     headerTitle: {
-        color: '#FFF',
         fontSize: 20,
         fontWeight: 'bold',
     },
@@ -159,10 +171,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    listContent: {
-        padding: 20,
-        paddingTop: 10,
     },
     cardContainer: {
         marginBottom: 16,
@@ -172,9 +180,9 @@ const styles = StyleSheet.create({
             width: 0,
             height: 4,
         },
-        shadowOpacity: 0.3,
+        shadowOpacity: 0.1,
         shadowRadius: 8,
-        elevation: 5,
+        elevation: 3,
     },
     card: {
         flexDirection: 'row',
@@ -183,7 +191,6 @@ const styles = StyleSheet.create({
         padding: 16,
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.05)',
     },
     cardLeft: {
         flexDirection: 'row',
@@ -194,7 +201,6 @@ const styles = StyleSheet.create({
         width: 48,
         height: 48,
         borderRadius: 16,
-        backgroundColor: 'rgba(74, 144, 226, 0.1)',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 16,
@@ -209,13 +215,11 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     subjectName: {
-        color: '#FFFFFF',
         fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 4,
     },
     subjectCode: {
-        color: '#888',
         fontSize: 12,
         fontWeight: '500',
     },
@@ -223,7 +227,6 @@ const styles = StyleSheet.create({
         width: 36,
         height: 36,
         borderRadius: 18,
-        backgroundColor: 'rgba(255,255,255,0.05)',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -233,7 +236,6 @@ const styles = StyleSheet.create({
         opacity: 0.5,
     },
     emptyText: {
-        color: '#888',
         marginTop: 16,
         fontSize: 16,
     },

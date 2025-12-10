@@ -10,6 +10,7 @@ import Animated, {
     withTiming
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../contexts/ThemeContext';
 import { API_URLS, apiCall } from '../utils/api';
 
 // Dynamically import Notifications only on native to avoid Web warnings
@@ -33,7 +34,7 @@ if (Platform.OS !== 'web') {
 }
 
 // Tab Item Component for individual animation control
-const TabItem = ({ tab, isActive, onPress }: { tab: any, isActive: boolean, onPress: () => void }) => {
+const TabItem = ({ tab, isActive, onPress, isDarkMode }: { tab: any, isActive: boolean, onPress: () => void, isDarkMode: boolean }) => {
     const scale = useSharedValue(1);
     const translateY = useSharedValue(0);
 
@@ -65,6 +66,11 @@ const TabItem = ({ tab, isActive, onPress }: { tab: any, isActive: boolean, onPr
         };
     });
 
+    // Dynamic colors based on theme
+    const inactiveColor = isDarkMode ? '#A0A0A0' : '#6b7280';
+    const activeColor = '#FFFFFF';
+    const activeLabelColor = isDarkMode ? '#FFFFFF' : '#111827';
+
     return (
         <Pressable
             onPress={onPress}
@@ -77,17 +83,25 @@ const TabItem = ({ tab, isActive, onPress }: { tab: any, isActive: boolean, onPr
                 <Ionicons
                     name={isActive ? (tab.icon as any) : `${tab.icon}-outline` as any}
                     size={24}
-                    color={isActive ? '#FFFFFF' : '#A0A0A0'}
+                    color={isActive ? activeColor : inactiveColor}
                 />
                 {tab.badge ? (
-                    <View style={styles.badge}>
+                    <View style={[
+                        styles.badge,
+                        { borderColor: isDarkMode ? '#1E1E1E' : '#585858ff' }
+                    ]}>
                         <Text style={styles.badgeText}>
                             {tab.badge > 99 ? '99+' : tab.badge}
                         </Text>
                     </View>
                 ) : null}
             </Animated.View>
-            <Animated.Text style={[styles.label, animatedLabelStyle, isActive && styles.activeLabel]}>
+            <Animated.Text style={[
+                styles.label,
+                { color: inactiveColor },
+                animatedLabelStyle,
+                isActive && { color: activeLabelColor, fontWeight: 'bold' }
+            ]}>
                 {tab.name}
             </Animated.Text>
         </Pressable>
@@ -98,6 +112,7 @@ export default function CustomTabBar() {
     const router = useRouter();
     const pathname = usePathname();
     const insets = useSafeAreaInsets();
+    const { isDarkMode } = useTheme();
     const [unreadCount, setUnreadCount] = useState(0);
     const wsRef = useRef<WebSocket | null>(null);
     const appState = useRef(AppState.currentState);
@@ -292,7 +307,21 @@ export default function CustomTabBar() {
     return (
         <View style={[styles.containerWrapper, { paddingBottom: insets.bottom + 10 }]}>
             <View style={styles.container}>
-                <BlurView intensity={90} tint="dark" style={styles.blurContainer}>
+                <BlurView
+                    intensity={90}
+                    tint={isDarkMode ? "dark" : "light"}
+                    style={[
+                        styles.blurContainer,
+                        {
+                            backgroundColor: isDarkMode
+                                ? 'rgba(20, 20, 20, 0.85)'
+                                : 'rgba(255, 255, 255, 0.85)',
+                            borderColor: isDarkMode
+                                ? 'rgba(255,255,255,0.1)'
+                                : 'rgba(0,0,0,0.1)',
+                        }
+                    ]}
+                >
                     <View style={styles.tabBar}>
                         {tabs.map((tab, index) => (
                             <TabItem
@@ -300,6 +329,7 @@ export default function CustomTabBar() {
                                 tab={tab}
                                 isActive={isActive(tab.route)}
                                 onPress={() => handlePress(tab.route)}
+                                isDarkMode={isDarkMode}
                             />
                         ))}
                     </View>
@@ -360,9 +390,9 @@ const styles = StyleSheet.create({
     },
     activeBackground: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: '#4ade80',
+        backgroundColor: '#009236ff',
         borderRadius: 22,
-        opacity: 0.2,
+        opacity: 0.8,
         transform: [{ scale: 1.2 }],
     },
     label: {

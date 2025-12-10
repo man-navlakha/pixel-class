@@ -7,7 +7,6 @@ import {
     Alert,
     FlatList,
     Image,
-    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
@@ -15,11 +14,13 @@ import {
 } from 'react-native';
 import VerifiedBadge from '../../components/VerifiedBadge';
 import { verifiedUsernames } from '../../constants/verifiedAccounts';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useDebounce } from '../../hooks/useDebounce';
 import { API_URLS, apiCall } from '../../utils/api';
 
 export default function SearchScreen() {
     const router = useRouter();
+    const { isDarkMode } = useTheme();
     const [search, setSearch] = useState("");
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -52,7 +53,6 @@ export default function SearchScreen() {
         const fetchFollowing = async () => {
             try {
                 const res = await apiCall(API_URLS.FOLLOWING, 'POST', { username: usernamec });
-                // Assuming res is an array based on your web code structure
                 if (Array.isArray(res)) {
                     setFollowingUsernames(res.map((u: any) => u.username));
                 }
@@ -81,7 +81,6 @@ export default function SearchScreen() {
         const fetchUsers = async () => {
             setLoading(true);
             try {
-                // Manually constructing query param since apiCall wrapper logic
                 const endpoint = `${API_URLS.USER_SEARCH}?username=${debouncedSearch}`;
                 const response = await apiCall(endpoint, 'GET');
 
@@ -125,9 +124,7 @@ export default function SearchScreen() {
                 follow_username,
             });
             if (response.message) {
-                // Alert.alert("Success", `You are now following ${follow_username}`);
                 setUsers(prev => prev.map(u => u.username === follow_username ? { ...u, is_following: true } : u));
-                // Update local following list tracking
                 setFollowingUsernames(prev => [...prev, follow_username]);
             }
         } catch (error) {
@@ -146,9 +143,7 @@ export default function SearchScreen() {
                 unfollow_username,
             });
             if (response.message) {
-                // Alert.alert("Success", `Unfollowed ${unfollow_username}`);
                 setUsers(prev => prev.map(u => u.username === unfollow_username ? { ...u, is_following: false } : u));
-                // Update local following list tracking
                 setFollowingUsernames(prev => prev.filter(u => u !== unfollow_username));
             }
         } catch (error) {
@@ -160,59 +155,59 @@ export default function SearchScreen() {
     };
 
     const renderUserItem = useCallback(({ item }: { item: any }) => (
-        <View style={styles.userCard}>
+        <View className="flex-row items-center justify-between bg-gray-100 dark:bg-white/5 p-3 rounded-2xl mb-2.5 border border-transparent">
             <TouchableOpacity
-                style={styles.userInfo}
+                className="flex-row items-center flex-1"
                 onPress={() => router.push(`/profile/${item.username}` as any)}
             >
                 <Image
                     source={{ uri: item.profile_pic || `https://i.pravatar.cc/150?u=${item.username}` }}
-                    style={styles.avatar}
+                    className="w-12 h-12 rounded-full mr-3 border border-gray-300 dark:border-white/20"
                 />
                 <View>
-                    <View style={styles.nameRow}>
-                        <Text style={styles.username}>{item.username}</Text>
+                    <View className="flex-row items-center">
+                        <Text className="text-gray-900 dark:text-white font-semibold text-base">{item.username}</Text>
                         {verifiedUsernames.has(item.username) && (
                             <VerifiedBadge size={16} style={{ marginLeft: 4 }} />
                         )}
                     </View>
-                    <Text style={styles.fullName}>{item.first_name} {item.last_name}</Text>
+                    <Text className="text-gray-600 dark:text-white/60 text-sm">{item.first_name} {item.last_name}</Text>
                 </View>
             </TouchableOpacity>
 
-            <View style={styles.actions}>
+            <View className="flex-row gap-2">
                 {item.is_following ? (
                     <>
                         <TouchableOpacity
-                            style={styles.btnMessage}
+                            className="py-2 px-3 rounded-lg bg-gray-200 dark:bg-white/10"
                             onPress={() => router.push(`/chat/${item.username}` as any)}
                         >
-                            <Text style={styles.btnText}>Message</Text>
+                            <Text className="text-gray-900 dark:text-white text-sm font-semibold">Message</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={styles.btnUnfollow}
+                            className="py-2 px-3 rounded-lg bg-red-500/80 min-w-[80px] items-center justify-center"
                             onPress={() => unfollow(item.username)}
                             disabled={actionLoading === item.username}
                         >
                             {actionLoading === item.username ? (
                                 <ActivityIndicator size="small" color="#FFF" />
                             ) : (
-                                <Text style={styles.btnText}>Unfollow</Text>
+                                <Text className="text-white text-sm font-semibold">Unfollow</Text>
                             )}
                         </TouchableOpacity>
                     </>
                 ) : (
                     <TouchableOpacity
-                        style={styles.btnFollow}
+                        className="py-2 px-4 rounded-lg bg-blue-600 min-w-[90px] items-center justify-center"
                         onPress={() => follow(item.username)}
                         disabled={actionLoading === item.username}
                     >
                         {actionLoading === item.username ? (
                             <ActivityIndicator size="small" color="#FFF" />
                         ) : (
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <View className="flex-row items-center">
                                 <Ionicons name="person-add" size={16} color="#FFF" style={{ marginRight: 4 }} />
-                                <Text style={styles.btnText}>Follow</Text>
+                                <Text className="text-white text-sm font-semibold">Follow</Text>
                             </View>
                         )}
                     </TouchableOpacity>
@@ -222,63 +217,43 @@ export default function SearchScreen() {
     ), [actionLoading, followingUsernames, router]);
 
     return (
-        <View style={styles.container}>
-            <StatusBar style="light" animated />
-            <Text style={styles.headerTitle}>Find Users</Text>
+        // Make sure it looks like this:
+        <View className={`${isDarkMode ? 'dark' : ''}`} style={{ flex: 1, marginBottom: 120 }}>
+            <View className="flex-1 bg-gray-50 dark:bg-[#121212] p-4 pt-[60px] ">
+                <StatusBar style="auto" animated />
+                <Text className="text-gray-900 dark:text-white text-4xl font-bold text-center mb-5">Find Users</Text>
 
-            <View style={styles.searchContainer}>
-                <Ionicons name="search" size={20} color="#888" style={styles.searchIcon} />
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search by username or name..."
-                    placeholderTextColor="#888"
-                    value={search}
-                    onChangeText={setSearch}
-                    autoCapitalize="none"
-                />
-            </View>
-
-            {loading ? (
-                <View style={{ marginTop: 20 }}>
-                    <ActivityIndicator size="large" color="#4ade80" />
+                <View className="flex-row items-center bg-gray-200 dark:bg-white/5 rounded-2xl px-4 h-14 mb-4 border border-gray-300 dark:border-white/10">
+                    <Ionicons name="search" size={20} color={isDarkMode ? "#888" : "#6b7280"} style={{ marginRight: 12 }} />
+                    <TextInput
+                        className="flex-1 text-gray-900 dark:text-white text-base"
+                        placeholder="Search by username or name..."
+                        placeholderTextColor={isDarkMode ? "#888" : "#9ca3af"}
+                        value={search}
+                        onChangeText={setSearch}
+                        autoCapitalize="none"
+                    />
                 </View>
-            ) : (
-                <FlatList
-                    data={users}
-                    renderItem={renderUserItem}
-                    keyExtractor={item => item.username}
-                    ListEmptyComponent={
-                        search.trim() ? (
-                            <Text style={styles.emptyText}>No users found for your search.</Text>
-                        ) : (
-                            <Text style={styles.emptyText}>Start typing to search for users.</Text>
-                        )
-                    }
-                />
-            )}
+
+                {loading ? (
+                    <View className="mt-5">
+                        <ActivityIndicator size="large" color="#4ade80" />
+                    </View>
+                ) : (
+                    <FlatList
+                        data={users}
+                        renderItem={renderUserItem}
+                        keyExtractor={item => item.username}
+                        ListEmptyComponent={
+                            search.trim() ? (
+                                <Text className="text-gray-500 dark:text-white/60 text-center mt-10 text-base">No users found for your search.</Text>
+                            ) : (
+                                <Text className="text-gray-500 dark:text-white/60 text-center mt-10 text-base">Start typing to search for users.</Text>
+                            )
+                        }
+                    />
+                )}
+            </View>
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#121212', padding: 16, paddingTop: 60 },
-    headerTitle: { color: '#FFF', fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 },
-    searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, paddingHorizontal: 16, height: 56, marginBottom: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
-    searchIcon: { marginRight: 12 },
-    searchInput: { flex: 1, color: '#FFF', fontSize: 16, height: '100%' },
-
-    userCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.05)', padding: 12, borderRadius: 16, marginBottom: 10, borderWidth: 1, borderColor: 'transparent' },
-    userInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-    avatar: { width: 48, height: 48, borderRadius: 24, marginRight: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-    nameRow: { flexDirection: 'row', alignItems: 'center' },
-    username: { color: '#FFF', fontWeight: '600', fontSize: 16 },
-    fullName: { color: 'rgba(255,255,255,0.6)', fontSize: 13 },
-
-    actions: { flexDirection: 'row', gap: 8 },
-    btnMessage: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.1)' },
-    btnUnfollow: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, backgroundColor: 'rgba(239, 68, 68, 0.8)', minWidth: 80, alignItems: 'center', justifyContent: 'center' },
-    btnFollow: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, backgroundColor: '#2563EB', minWidth: 90, alignItems: 'center', justifyContent: 'center' },
-    btnText: { color: '#FFF', fontSize: 13, fontWeight: '600' },
-
-    emptyText: { color: 'rgba(255,255,255,0.6)', textAlign: 'center', marginTop: 40, fontSize: 16 },
-});

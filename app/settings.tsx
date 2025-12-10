@@ -17,7 +17,7 @@ import { useTheme } from '../contexts/ThemeContext';
 
 export default function SettingsScreen() {
     const router = useRouter();
-    const { isDarkMode, toggleTheme } = useTheme();
+    const { isDarkMode, toggleTheme, isSystemTheme, setSystemTheme } = useTheme();
     const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
     const appVersion = Constants.expoConfig?.version || '1.0.0';
@@ -45,17 +45,18 @@ export default function SettingsScreen() {
         showArrow = true,
         rightComponent
     }: any) => (
+
         <TouchableOpacity
-            style={styles.settingItem}
+            className='py-2 border-b border-gray-200 dark:border-gray-800 flex flex-row items-center justify-between px-4 py-6 '
             onPress={onPress}
             disabled={!onPress}
         >
-            <View style={styles.settingLeft}>
-                <View style={styles.iconContainer}>
+            <View className='flex-row items-center flex-1'>
+                <View className='w-10 h-10 rounded-full bg-gray-200 dark:bg-[#2A2A2A] items-center justify-center mr-3'>
                     <Ionicons name={icon} size={22} color="#4ade80" />
                 </View>
-                <View style={styles.settingText}>
-                    <Text style={styles.settingTitle}>{title}</Text>
+                <View className='flex-1'>
+                    <Text className='text-gray-900 dark:text-white text-base font-medium mb-0.5'>{title}</Text>
                     {subtitle && <Text style={styles.settingSubtitle}>{subtitle}</Text>}
                 </View>
             </View>
@@ -71,7 +72,9 @@ export default function SettingsScreen() {
 
     return (
         <View className={isDarkMode ? 'dark' : ''} style={{ flex: 1 }}>
-            <SafeAreaView style={styles.container} edges={['top']}>
+            <SafeAreaView edges={['top']} style={[styles.container, {
+                backgroundColor: isDarkMode ? '#121212' : '#f9fafb'
+            }]}>
                 <Stack.Screen options={{ headerShown: false }} />
                 <StatusBar style="auto" animated />
 
@@ -83,7 +86,7 @@ export default function SettingsScreen() {
                     >
                         <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#FFF" : "#000"} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Settings</Text>
+                    <Text className="text-gray-900 dark:text-white text-2xl font-medium mb-0.5">Settings</Text>
                     <View style={{ width: 40 }} />
                 </View>
 
@@ -93,7 +96,7 @@ export default function SettingsScreen() {
                 >
                     {/* Account Section */}
                     <SectionHeader title="ACCOUNT" />
-                    <View style={styles.section}>
+                    <View className='bg-gray-100 dark:bg-[#1E1E1E] mx-4 rounded-xl overflow-hidden mb-2 text-gray-900 dark:text-white'>
                         <SettingItem
                             icon="person-outline"
                             title="Edit Profile"
@@ -116,7 +119,7 @@ export default function SettingsScreen() {
 
                     {/* Preferences Section */}
                     <SectionHeader title="PREFERENCES" />
-                    <View style={styles.section}>
+                    <View className='bg-gray-100 dark:bg-[#1E1E1E] mx-4 rounded-xl overflow-hidden mb-2 text-gray-900 dark:text-white'>
                         <SettingItem
                             icon="notifications-outline"
                             title="Notifications"
@@ -135,15 +138,31 @@ export default function SettingsScreen() {
                         <SettingItem
                             icon="moon-outline"
                             title="Dark Mode"
-                            subtitle="Use dark theme"
+                            subtitle={isSystemTheme ? "Controlled by system" : "Use dark theme"}
                             onPress={() => { }}
                             showArrow={false}
                             rightComponent={
                                 <Switch
                                     value={isDarkMode}
                                     onValueChange={toggleTheme}
+                                    disabled={isSystemTheme}
                                     trackColor={{ false: '#333', true: '#4ade80' }}
                                     thumbColor={isDarkMode ? '#FFF' : '#888'}
+                                />
+                            }
+                        />
+                        <SettingItem
+                            icon="phone-portrait-outline"
+                            title="Use System Theme"
+                            subtitle="Follow device theme settings"
+                            onPress={() => { }}
+                            showArrow={false}
+                            rightComponent={
+                                <Switch
+                                    value={isSystemTheme}
+                                    onValueChange={setSystemTheme}
+                                    trackColor={{ false: '#333', true: '#4ade80' }}
+                                    thumbColor={isSystemTheme ? '#FFF' : '#888'}
                                 />
                             }
                         />
@@ -157,7 +176,7 @@ export default function SettingsScreen() {
 
                     {/* App Information Section */}
                     <SectionHeader title="APP INFORMATION" />
-                    <View style={styles.section}>
+                    <View className='bg-gray-100 dark:bg-[#1E1E1E] mx-4 rounded-xl overflow-hidden mb-2 text-gray-900 dark:text-white'>
                         <SettingItem
                             icon="information-circle-outline"
                             title="About Us"
@@ -187,7 +206,7 @@ export default function SettingsScreen() {
 
                     {/* Support Section */}
                     <SectionHeader title="SUPPORT" />
-                    <View style={styles.section}>
+                    <View className='bg-gray-100 dark:bg-[#1E1E1E] mx-4 rounded-xl overflow-hidden mb-2 text-gray-900 dark:text-white'>
                         <SettingItem
                             icon="help-circle-outline"
                             title="Help & Support"

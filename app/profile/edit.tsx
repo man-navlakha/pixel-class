@@ -14,12 +14,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-import { API_URLS, apiCall } from '../../utils/api';
-
+import { useTheme } from '../../contexts/ThemeContext';
 import { useDebounce } from '../../hooks/useDebounce';
+import { API_URLS, apiCall } from '../../utils/api';
 
 export default function EditProfileScreen() {
     const router = useRouter();
+    const { isDarkMode } = useTheme();
     const [originalUsername, setOriginalUsername] = useState('');
     const [username, setUsername] = useState('');
     const [profilePic, setProfilePic] = useState<any>(null);
@@ -194,86 +195,91 @@ export default function EditProfileScreen() {
 
     if (initialLoading) {
         return (
-            <SafeAreaView className="flex-1 bg-[#121212] justify-center items-center">
-                <ActivityIndicator size="large" color="#4ade80" />
-            </SafeAreaView>
+            <View className={isDarkMode ? 'dark' : ''} style={{ flex: 1 }}>
+                <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#121212] justify-center items-center">
+                    <ActivityIndicator size="large" color="#4ade80" />
+                </SafeAreaView>
+            </View>
         );
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-[#121212]">
-            <Stack.Screen options={{ headerShown: false }} />
-            <StatusBar style="light" animated />
+        <View className={isDarkMode ? 'dark' : ''} style={{ flex: 1 }}>
+            <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#121212]">
+                <Stack.Screen options={{ headerShown: false }} />
+                <StatusBar style="auto" animated />
 
-            {/* Header */}
-            <View className="flex-row items-center justify-between px-5 py-4 border-b border-white/10">
-                <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
-                    <Ionicons name="arrow-back" size={24} color="#FFF" />
-                </TouchableOpacity>
-                <Text className="text-white text-lg font-bold">Edit Profile</Text>
-                <View className="w-8" />
-            </View>
-
-            <View className="p-5">
-                {/* Avatar */}
-                <View className="items-center mb-8">
-                    <TouchableOpacity onPress={pickImage} className="relative">
-                        <Image
-                            source={{ uri: imagePreview || `https://i.pravatar.cc/150?u=${originalUsername}` }}
-                            className="w-28 h-28 rounded-full border-2 border-[#4ade80]"
-                        />
-                        <View className="absolute bottom-0 right-0 bg-[#4ade80] p-2 rounded-full border-4 border-[#121212]">
-                            <Ionicons name="camera" size={16} color="#FFF" />
-                        </View>
+                {/* Header */}
+                <View className="flex-row items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-white/10">
+                    <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
+                        <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#FFF" : "#000"} />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={pickImage}>
-                        <Text className="text-[#4ade80] mt-3 font-semibold">Change Photo</Text>
-                    </TouchableOpacity>
+                    <Text className="text-gray-900 dark:text-white text-lg font-bold">Edit Profile</Text>
+                    <View className="w-8" />
                 </View>
 
-                {/* Username Input */}
-                <View className="mb-6">
-                    <Text className="text-white/70 mb-2 ml-1 text-sm font-medium">Username</Text>
-                    <View className="relative">
-                        <TextInput
-                            className="bg-white/5 rounded-xl px-4 py-3.5 text-white border border-white/10 focus:border-[#4ade80]"
-                            value={username}
-                            onChangeText={(text) => setUsername(text.replace(/\s/g, ""))}
-                            placeholder="New Username"
-                            placeholderTextColor="#666"
-                            autoCapitalize="none"
-                        />
-                        <View className="absolute right-3 top-3.5">
-                            {getStatusIcon()}
-                        </View>
+                <View className="p-5">
+                    {/* Avatar */}
+                    <View className="items-center mb-8">
+                        <TouchableOpacity onPress={pickImage} className="relative">
+                            <Image
+                                source={{ uri: imagePreview || `https://i.pravatar.cc/150?u=${originalUsername}` }}
+                                style={{ width: 112, height: 112 }}
+                                className="rounded-full border-2 border-[#4ade80]"
+                            />
+                            <View className="absolute bottom-0 right-0 bg-[#4ade80] p-2 rounded-full border-4 border-gray-50 dark:border-[#121212]">
+                                <Ionicons name="camera" size={16} color="#FFF" />
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={pickImage}>
+                            <Text className="text-[#4ade80] mt-3 font-semibold">Change Photo</Text>
+                        </TouchableOpacity>
                     </View>
 
-                    {/* Error Messages */}
-                    {["taken", "forbidden", "short"].includes(usernameStatus) && (
-                        <Text className="text-red-500 text-xs mt-2 ml-1">
-                            {usernameStatus === "taken" && "This username is already taken."}
-                            {usernameStatus === "forbidden" && "This username contains a forbidden word."}
-                            {usernameStatus === "short" && "Username must be at least 3 characters."}
-                        </Text>
-                    )}
-                </View>
+                    {/* Username Input */}
+                    <View className="mb-6">
+                        <Text className="text-gray-600 dark:text-white/70 mb-2 ml-1 text-sm font-medium">Username</Text>
+                        <View className="relative">
+                            <TextInput
+                                className="bg-gray-100 dark:bg-white/5 rounded-xl px-4 py-3.5 text-gray-900 dark:text-white border border-gray-200 dark:border-white/10"
+                                value={username}
+                                onChangeText={(text) => setUsername(text.replace(/\s/g, ""))}
+                                placeholder="New Username"
+                                placeholderTextColor={isDarkMode ? "#666" : "#9ca3af"}
+                                autoCapitalize="none"
+                            />
+                            <View className="absolute right-3 top-3.5">
+                                {getStatusIcon()}
+                            </View>
+                        </View>
 
-                {/* Submit Button */}
-                <TouchableOpacity
-                    className={`py-4 rounded-xl items-center ${(loading || ["checking", "taken", "forbidden", "short"].includes(usernameStatus))
-                        ? 'bg-white/10 opacity-50'
-                        : 'bg-[#4ade80]'
-                        }`}
-                    onPress={handleProfileEdit}
-                    disabled={loading || ["checking", "taken", "forbidden", "short"].includes(usernameStatus)}
-                >
-                    {loading ? (
-                        <ActivityIndicator color="#FFF" />
-                    ) : (
-                        <Text className="text-white font-bold text-lg">Save Changes</Text>
-                    )}
-                </TouchableOpacity>
-            </View>
-        </SafeAreaView>
+                        {/* Error Messages */}
+                        {["taken", "forbidden", "short"].includes(usernameStatus) && (
+                            <Text className="text-red-500 text-xs mt-2 ml-1">
+                                {usernameStatus === "taken" && "This username is already taken."}
+                                {usernameStatus === "forbidden" && "This username contains a forbidden word."}
+                                {usernameStatus === "short" && "Username must be at least 3 characters."}
+                            </Text>
+                        )}
+                    </View>
+
+                    {/* Submit Button */}
+                    <TouchableOpacity
+                        className={`py-4 rounded-xl items-center ${(loading || ["checking", "taken", "forbidden", "short"].includes(usernameStatus))
+                            ? 'bg-white/10 opacity-50'
+                            : 'bg-[#4ade80]'
+                            }`}
+                        onPress={handleProfileEdit}
+                        disabled={loading || ["checking", "taken", "forbidden", "short"].includes(usernameStatus)}
+                    >
+                        {loading ? (
+                            <ActivityIndicator color="#FFF" />
+                        ) : (
+                            <Text className="text-white font-bold text-lg">Save Changes</Text>
+                        )}
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
+        </View>
     );
 }
