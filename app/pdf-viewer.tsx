@@ -3,19 +3,30 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function PdfViewerScreen() {
     const router = useRouter();
     const { uri, title } = useLocalSearchParams();
+    const { isDarkMode } = useTheme();
     const [loading, setLoading] = useState(true);
 
     if (!uri) {
         return (
-            <View style={styles.container}>
-                <Stack.Screen options={{ title: 'Error', headerStyle: { backgroundColor: '#121212' }, headerTintColor: '#fff' }} />
-                <Text style={styles.errorText}>No Document URI provided.</Text>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Text style={styles.backButtonText}>Go Back</Text>
+            <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#f9fafb' }]}>
+                <Stack.Screen
+                    options={{
+                        title: 'Error',
+                        headerStyle: { backgroundColor: isDarkMode ? '#121212' : '#f9fafb' },
+                        headerTintColor: isDarkMode ? '#fff' : '#111827'
+                    }}
+                />
+                <Text style={[styles.errorText, { color: isDarkMode ? '#ef4444' : '#dc2626' }]}>No Document URI provided.</Text>
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    style={[styles.backButton, { backgroundColor: isDarkMode ? '#333' : '#e5e7eb' }]}
+                >
+                    <Text style={[styles.backButtonText, { color: isDarkMode ? '#FFF' : '#111827' }]}>Go Back</Text>
                 </TouchableOpacity>
             </View>
         );
@@ -23,7 +34,6 @@ export default function PdfViewerScreen() {
 
     const pdfUrl = uri as string;
 
-    // CRITICAL FIX: 
     // Android WebView cannot display PDFs directly. We use Google Docs Viewer service.
     // iOS WebView handles PDFs natively.
     const viewerUrl = Platform.OS === 'android'
@@ -31,15 +41,15 @@ export default function PdfViewerScreen() {
         : pdfUrl;
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#f9fafb' }]}>
             <Stack.Screen
                 options={{
                     title: (title as string) || 'Document',
-                    headerStyle: { backgroundColor: '#121212' },
-                    headerTintColor: '#fff',
+                    headerStyle: { backgroundColor: isDarkMode ? '#121212' : '#f9fafb' },
+                    headerTintColor: isDarkMode ? '#fff' : '#111827',
                     headerLeft: () => (
                         <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 15 }}>
-                            <Ionicons name="arrow-back" size={24} color="#FFF" />
+                            <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#FFF" : "#111827"} />
                         </TouchableOpacity>
                     ),
                     headerShown: true
@@ -48,16 +58,15 @@ export default function PdfViewerScreen() {
 
             <WebView
                 source={{ uri: viewerUrl }}
-                style={{ flex: 1, backgroundColor: '#121212' }}
+                style={[styles.webview, { backgroundColor: isDarkMode ? '#121212' : '#ffffff' }]}
                 onLoadStart={() => setLoading(true)}
                 onLoadEnd={() => setLoading(false)}
                 startInLoadingState={true}
                 renderLoading={() => (
-                    <View style={styles.loadingOverlay}>
-                        <ActivityIndicator size="large" color="#4ade80" />
+                    <View style={[styles.loadingOverlay, { backgroundColor: isDarkMode ? '#121212' : '#f9fafb' }]}>
+                        <ActivityIndicator size="large" color="#10b981" />
                     </View>
                 )}
-                // Fix for Android not allowing mixed content if your PDF server is HTTP
                 mixedContentMode="always"
             />
         </View>
@@ -67,25 +76,27 @@ export default function PdfViewerScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#121212',
+    },
+    webview: {
+        flex: 1,
     },
     loadingOverlay: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: '#121212',
         justifyContent: 'center',
         alignItems: 'center',
     },
     errorText: {
-        color: '#FF5252',
         fontSize: 16,
-        marginBottom: 20
+        marginBottom: 20,
+        textAlign: 'center',
     },
     backButton: {
         padding: 10,
-        backgroundColor: '#333',
-        borderRadius: 8
+        borderRadius: 8,
+        alignSelf: 'center',
     },
     backButtonText: {
-        color: '#FFF'
+        fontSize: 16,
+        fontWeight: '600',
     }
 });

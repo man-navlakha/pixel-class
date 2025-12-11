@@ -7,6 +7,7 @@ import {
     Alert,
     FlatList,
     Image,
+    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
@@ -155,78 +156,79 @@ export default function SearchScreen() {
     };
 
     const renderUserItem = useCallback(({ item }: { item: any }) => (
-        <View className="flex-row items-center justify-between bg-gray-100 dark:bg-white/5 p-3 rounded-2xl mb-2.5 border border-transparent">
+        <View style={[styles.userCard, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#f3f4f6', borderColor: 'transparent' }]}>
             <TouchableOpacity
-                className="flex-row items-center flex-1"
+                style={styles.userInfo}
                 onPress={() => router.push(`/profile/${item.username}` as any)}
             >
                 <Image
                     source={{ uri: item.profile_pic || `https://i.pravatar.cc/150?u=${item.username}` }}
-                    className="w-12 h-12 rounded-full mr-3 border border-gray-300 dark:border-white/20"
+                    style={[styles.avatar, { borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : '#d1d5db' }]}
                 />
                 <View>
-                    <View className="flex-row items-center">
-                        <Text className="text-gray-900 dark:text-white font-semibold text-base">{item.username}</Text>
+                    <View style={styles.usernameRow}>
+                        <Text style={[styles.username, { color: isDarkMode ? '#FFF' : '#111827' }]}>{item.username}</Text>
                         {verifiedUsernames.has(item.username) && (
                             <VerifiedBadge size={16} style={{ marginLeft: 4 }} />
                         )}
                     </View>
-                    <Text className="text-gray-600 dark:text-white/60 text-sm">{item.first_name} {item.last_name}</Text>
+                    <Text style={[styles.fullName, { color: isDarkMode ? 'rgba(255,255,255,0.6)' : '#6b7280' }]}>{item.first_name} {item.last_name}</Text>
                 </View>
             </TouchableOpacity>
 
-            <View className="flex-row gap-2">
+            <View style={styles.actionsRow}>
                 {item.is_following ? (
                     <>
                         <TouchableOpacity
-                            className="py-2 px-3 rounded-lg bg-gray-200 dark:bg-white/10"
+                            style={[styles.messageButton, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }]}
                             onPress={() => router.push(`/chat/${item.username}` as any)}
                         >
-                            <Text className="text-gray-900 dark:text-white text-sm font-semibold">Message</Text>
+                            <Text style={[styles.messageButtonText, { color: isDarkMode ? '#FFF' : '#111827' }]}>Message</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            className="py-2 px-3 rounded-lg bg-red-500/80 min-w-[80px] items-center justify-center"
+                            style={styles.unfollowButton}
                             onPress={() => unfollow(item.username)}
                             disabled={actionLoading === item.username}
                         >
                             {actionLoading === item.username ? (
                                 <ActivityIndicator size="small" color="#FFF" />
                             ) : (
-                                <Text className="text-white text-sm font-semibold">Unfollow</Text>
+                                <Text style={styles.unfollowButtonText}>Unfollow</Text>
                             )}
                         </TouchableOpacity>
                     </>
                 ) : (
                     <TouchableOpacity
-                        className="py-2 px-4 rounded-lg bg-blue-600 min-w-[90px] items-center justify-center"
+                        style={styles.followButton}
                         onPress={() => follow(item.username)}
                         disabled={actionLoading === item.username}
                     >
                         {actionLoading === item.username ? (
                             <ActivityIndicator size="small" color="#FFF" />
                         ) : (
-                            <View className="flex-row items-center">
+                            <View style={styles.followButtonContent}>
                                 <Ionicons name="person-add" size={16} color="#FFF" style={{ marginRight: 4 }} />
-                                <Text className="text-white text-sm font-semibold">Follow</Text>
+                                <Text style={styles.followButtonText}>Follow</Text>
                             </View>
                         )}
                     </TouchableOpacity>
                 )}
             </View>
         </View>
-    ), [actionLoading, followingUsernames, router]);
+    ), [actionLoading, followingUsernames, router, isDarkMode]);
 
     return (
-        // Make sure it looks like this:
-        <View className={`${isDarkMode ? 'dark' : ''}`} style={{ flex: 1, marginBottom: 120 }}>
-            <View className="flex-1 bg-gray-50 dark:bg-[#121212] p-4 pt-[60px] ">
+        <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#f9fafb', paddingBottom: 120 }]}>
+            <View style={styles.content}>
                 <StatusBar style="auto" animated />
-                <Text className="text-gray-900 dark:text-white text-4xl font-bold text-center mb-5">Find Users</Text>
+                <Text style={[styles.title, { color: isDarkMode ? '#FFF' : '#111827' }]}>Find Users</Text>
 
-                <View className="flex-row items-center bg-gray-200 dark:bg-white/5 rounded-2xl px-4 h-14 mb-4 border border-gray-300 dark:border-white/10">
-                    <Ionicons name="search" size={20} color={isDarkMode ? "#888" : "#6b7280"} style={{ marginRight: 12 }} />
+                <View style={[styles.searchContainer, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#e5e7eb', borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : '#d1d5db' }]}>
+                    {/* <Ionicons name="search" size={20} color={isDarkMode ? "#888" : "#6b7280"} style={{ marginRight: 12 }} /> */}
+                    <Text style={[{ color: isDarkMode ? '#888' : '#6b7280', marginLeft: 12 }]}>@</Text>
+
                     <TextInput
-                        className="flex-1 text-gray-900 dark:text-white text-base"
+                        style={[styles.searchInput, { color: isDarkMode ? '#FFF' : '#111827', paddingVertical: 0, paddingHorizontal: 12 }]}
                         placeholder="Search by username or name..."
                         placeholderTextColor={isDarkMode ? "#888" : "#9ca3af"}
                         value={search}
@@ -236,19 +238,20 @@ export default function SearchScreen() {
                 </View>
 
                 {loading ? (
-                    <View className="mt-5">
-                        <ActivityIndicator size="large" color="#4ade80" />
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#10b981" />
                     </View>
                 ) : (
                     <FlatList
                         data={users}
                         renderItem={renderUserItem}
                         keyExtractor={item => item.username}
+                        className={`rounded-3xl`}
                         ListEmptyComponent={
                             search.trim() ? (
-                                <Text className="text-gray-500 dark:text-white/60 text-center mt-10 text-base">No users found for your search.</Text>
+                                <Text style={[styles.emptyText, { color: isDarkMode ? 'rgba(255,255,255,0.6)' : '#6b7280' }]}>No users found for your search.</Text>
                             ) : (
-                                <Text className="text-gray-500 dark:text-white/60 text-center mt-10 text-base">Start typing to search for users.</Text>
+                                <Text style={[styles.emptyText, { color: isDarkMode ? 'rgba(255,255,255,0.6)' : '#6b7280' }]}>Start typing to search for users.</Text>
                             )
                         }
                     />
@@ -257,3 +260,118 @@ export default function SearchScreen() {
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    content: {
+        flex: 1,
+        padding: 16,
+        paddingTop: 60,
+    },
+    title: {
+        fontSize: 36,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 20,
+    },
+    searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 16,
+        paddingHorizontal: 6,
+        height: 56,
+        marginBottom: 16,
+        borderWidth: 1,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 16,
+    },
+    loadingContainer: {
+        marginTop: 20,
+    },
+    userCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 12,
+        borderRadius: 16,
+        marginBottom: 10,
+        borderWidth: 1,
+    },
+    userInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+    },
+    avatar: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        marginRight: 12,
+        borderWidth: 1,
+    },
+    usernameRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    username: {
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    fullName: {
+        fontSize: 14,
+    },
+    actionsRow: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    messageButton: {
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+    },
+    messageButtonText: {
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    unfollowButton: {
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+        minWidth: 80,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    unfollowButtonText: {
+        color: '#FFF',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    followButton: {
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        backgroundColor: '#2563eb',
+        minWidth: 90,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    followButtonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    followButtonText: {
+        color: '#FFF',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    emptyText: {
+        textAlign: 'center',
+        marginTop: 40,
+        fontSize: 16,
+    },
+});

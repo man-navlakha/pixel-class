@@ -7,6 +7,8 @@ import {
     ActivityIndicator,
     Alert,
     Image,
+    ScrollView,
+    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
@@ -28,14 +30,12 @@ export default function EditProfileScreen() {
     const [loading, setLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
 
-    // Username validation state
     const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'forbidden' | 'short'>('idle');
     const debouncedUsername = useDebounce(username, 500);
 
     const forbiddenUsernames = [
         "pxc", "pixel", "pixelclass", "admin", "support", "kill", "murder", "terrorist", "abuse",
     ];
-    // TODO: Ensure backend also validates these forbidden usernames for security.
 
     useEffect(() => {
         fetchCurrentUser();
@@ -44,8 +44,6 @@ export default function EditProfileScreen() {
     const fetchCurrentUser = async () => {
         try {
             const me = await apiCall(API_URLS.ME, 'GET');
-
-            // Fetch detailed profile to get the correct profile picture
             const profileDetails = await apiCall(API_URLS.PROFILE_DETAILS, 'POST', {
                 username: me.username
             });
@@ -62,7 +60,6 @@ export default function EditProfileScreen() {
         }
     };
 
-    // Real-time username validation
     useEffect(() => {
         if (initialLoading) return;
 
@@ -164,7 +161,6 @@ export default function EditProfileScreen() {
                     text1: 'Success',
                     text2: 'Profile updated successfully!',
                 });
-                // Navigate back or refresh
                 router.replace('/(tabs)/profile');
             }
         } catch (err: any) {
@@ -181,13 +177,13 @@ export default function EditProfileScreen() {
     const getStatusIcon = () => {
         switch (usernameStatus) {
             case "checking":
-                return <ActivityIndicator size="small" color="#FFF" />;
+                return <ActivityIndicator size="small" color={isDarkMode ? "#FFF" : "#111827"} />;
             case "available":
-                return <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />;
+                return <Ionicons name="checkmark-circle" size={20} color="#10b981" />;
             case "taken":
             case "forbidden":
             case "short":
-                return <Ionicons name="alert-circle" size={20} color="#F44336" />;
+                return <Ionicons name="alert-circle" size={20} color="#ef4444" />;
             default:
                 return null;
         }
@@ -195,67 +191,73 @@ export default function EditProfileScreen() {
 
     if (initialLoading) {
         return (
-            <View className={isDarkMode ? 'dark' : ''} style={{ flex: 1 }}>
-                <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#121212] justify-center items-center">
-                    <ActivityIndicator size="large" color="#4ade80" />
-                </SafeAreaView>
-            </View>
+            <SafeAreaView style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#f9fafb' }]}>
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#10b981" />
+                </View>
+            </SafeAreaView>
         );
     }
 
     return (
-        <View className={isDarkMode ? 'dark' : ''} style={{ flex: 1 }}>
-            <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#121212]">
-                <Stack.Screen options={{ headerShown: false }} />
-                <StatusBar style="auto" animated />
+        <SafeAreaView style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#f9fafb' }]}>
+            <Stack.Screen options={{ headerShown: false }} />
+            <StatusBar style={isDarkMode ? "light" : "dark"} animated />
 
-                {/* Header */}
-                <View className="flex-row items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-white/10">
-                    <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
-                        <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#FFF" : "#000"} />
-                    </TouchableOpacity>
-                    <Text className="text-gray-900 dark:text-white text-lg font-bold">Edit Profile</Text>
-                    <View className="w-8" />
-                </View>
+            {/* Header */}
+            <View style={[styles.header, { borderBottomColor: isDarkMode ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }]}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#FFF" : "#000"} />
+                </TouchableOpacity>
+                <Text style={[styles.headerTitle, { color: isDarkMode ? '#FFF' : '#111827' }]}>Edit Profile</Text>
+                <View style={{ width: 32 }} />
+            </View>
 
-                <View className="p-5">
+            <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+                <View style={styles.content}>
                     {/* Avatar */}
-                    <View className="items-center mb-8">
-                        <TouchableOpacity onPress={pickImage} className="relative">
+                    <View style={styles.avatarContainer}>
+                        <TouchableOpacity onPress={pickImage} style={styles.avatarWrapper}>
                             <Image
                                 source={{ uri: imagePreview || `https://i.pravatar.cc/150?u=${originalUsername}` }}
-                                style={{ width: 112, height: 112 }}
-                                className="rounded-full border-2 border-[#4ade80]"
+                                style={styles.avatar}
                             />
-                            <View className="absolute bottom-0 right-0 bg-[#4ade80] p-2 rounded-full border-4 border-gray-50 dark:border-[#121212]">
+                            <View style={[styles.cameraButton, { borderColor: isDarkMode ? '#121212' : '#f9fafb' }]}>
                                 <Ionicons name="camera" size={16} color="#FFF" />
                             </View>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={pickImage}>
-                            <Text className="text-[#4ade80] mt-3 font-semibold">Change Photo</Text>
+                            <Text style={styles.changePhotoText}>Change Photo</Text>
                         </TouchableOpacity>
                     </View>
 
                     {/* Username Input */}
-                    <View className="mb-6">
-                        <Text className="text-gray-600 dark:text-white/70 mb-2 ml-1 text-sm font-medium">Username</Text>
-                        <View className="relative">
+                    <View style={styles.inputContainer}>
+                        <Text style={[styles.label, { color: isDarkMode ? 'rgba(255,255,255,0.7)' : '#6b7280' }]}>Username</Text>
+                        <View style={styles.inputWrapper}>
                             <TextInput
-                                className="bg-gray-100 dark:bg-white/5 rounded-xl px-4 py-3.5 text-gray-900 dark:text-white border border-gray-200 dark:border-white/10"
+                                style={[
+                                    styles.input,
+                                    {
+                                        backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#f3f4f6',
+                                        color: isDarkMode ? '#FFF' : '#111827',
+                                        borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : '#e5e7eb'
+                                    }
+                                ]}
                                 value={username}
                                 onChangeText={(text) => setUsername(text.replace(/\s/g, ""))}
                                 placeholder="New Username"
                                 placeholderTextColor={isDarkMode ? "#666" : "#9ca3af"}
                                 autoCapitalize="none"
                             />
-                            <View className="absolute right-3 top-3.5">
+                            <View style={styles.statusIcon}>
                                 {getStatusIcon()}
                             </View>
                         </View>
 
                         {/* Error Messages */}
                         {["taken", "forbidden", "short"].includes(usernameStatus) && (
-                            <Text className="text-red-500 text-xs mt-2 ml-1">
+                            <Text style={styles.errorText}>
                                 {usernameStatus === "taken" && "This username is already taken."}
                                 {usernameStatus === "forbidden" && "This username contains a forbidden word."}
                                 {usernameStatus === "short" && "Username must be at least 3 characters."}
@@ -265,21 +267,131 @@ export default function EditProfileScreen() {
 
                     {/* Submit Button */}
                     <TouchableOpacity
-                        className={`py-4 rounded-xl items-center ${(loading || ["checking", "taken", "forbidden", "short"].includes(usernameStatus))
-                            ? 'bg-white/10 opacity-50'
-                            : 'bg-[#4ade80]'
-                            }`}
+                        style={[
+                            styles.submitButton,
+                            (loading || ["checking", "taken", "forbidden", "short"].includes(usernameStatus))
+                                ? styles.submitButtonDisabled
+                                : styles.submitButtonActive
+                        ]}
                         onPress={handleProfileEdit}
                         disabled={loading || ["checking", "taken", "forbidden", "short"].includes(usernameStatus)}
                     >
                         {loading ? (
                             <ActivityIndicator color="#FFF" />
                         ) : (
-                            <Text className="text-white font-bold text-lg">Save Changes</Text>
+                            <Text style={styles.submitButtonText}>Save Changes</Text>
                         )}
                     </TouchableOpacity>
                 </View>
-            </SafeAreaView>
-        </View>
+            </ScrollView>
+        </SafeAreaView>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+    },
+    backButton: {
+        padding: 8,
+        marginLeft: -8,
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    scrollView: {
+        flex: 1,
+    },
+    content: {
+        padding: 20,
+    },
+    avatarContainer: {
+        alignItems: 'center',
+        marginBottom: 32,
+    },
+    avatarWrapper: {
+        position: 'relative',
+    },
+    avatar: {
+        width: 112,
+        height: 112,
+        borderRadius: 56,
+        borderWidth: 2,
+        borderColor: '#10b981',
+    },
+    cameraButton: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        backgroundColor: '#10b981',
+        padding: 8,
+        borderRadius: 20,
+        borderWidth: 4,
+    },
+    changePhotoText: {
+        color: '#10b981',
+        marginTop: 12,
+        fontWeight: '600',
+    },
+    inputContainer: {
+        marginBottom: 24,
+    },
+    label: {
+        marginBottom: 8,
+        marginLeft: 4,
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    inputWrapper: {
+        position: 'relative',
+    },
+    input: {
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        fontSize: 16,
+        borderWidth: 1,
+    },
+    statusIcon: {
+        position: 'absolute',
+        right: 12,
+        top: 14,
+    },
+    errorText: {
+        color: '#ef4444',
+        fontSize: 12,
+        marginTop: 8,
+        marginLeft: 4,
+    },
+    submitButton: {
+        paddingVertical: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    submitButtonActive: {
+        backgroundColor: '#10b981',
+    },
+    submitButtonDisabled: {
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        opacity: 0.5,
+    },
+    submitButtonText: {
+        color: '#FFF',
+        fontWeight: 'bold',
+        fontSize: 18,
+    },
+});

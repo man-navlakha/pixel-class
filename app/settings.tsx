@@ -45,203 +45,197 @@ export default function SettingsScreen() {
         showArrow = true,
         rightComponent
     }: any) => (
-
         <TouchableOpacity
-            className='py-2 border-b border-gray-200 dark:border-gray-800 flex flex-row items-center justify-between px-4 py-6 '
+            style={[styles.settingItem, { borderBottomColor: isDarkMode ? '#2A2A2A' : '#e5e7eb' }]}
             onPress={onPress}
             disabled={!onPress}
         >
-            <View className='flex-row items-center flex-1'>
-                <View className='w-10 h-10 rounded-full bg-gray-200 dark:bg-[#2A2A2A] items-center justify-center mr-3'>
-                    <Ionicons name={icon} size={22} color="#4ade80" />
+            <View style={styles.settingLeft}>
+                <View style={[styles.iconContainer, { backgroundColor: isDarkMode ? '#2A2A2A' : '#e5e7eb' }]}>
+                    <Ionicons name={icon} size={22} color="#10b981" />
                 </View>
-                <View className='flex-1'>
-                    <Text className='text-gray-900 dark:text-white text-base font-medium mb-0.5'>{title}</Text>
-                    {subtitle && <Text style={styles.settingSubtitle}>{subtitle}</Text>}
+                <View style={styles.settingText}>
+                    <Text style={[styles.settingTitle, { color: isDarkMode ? '#FFF' : '#111827' }]}>{title}</Text>
+                    {subtitle && <Text style={[styles.settingSubtitle, { color: isDarkMode ? '#888' : '#6b7280' }]}>{subtitle}</Text>}
                 </View>
             </View>
             {rightComponent || (showArrow && (
-                <Ionicons name="chevron-forward" size={20} color="#666" />
+                <Ionicons name="chevron-forward" size={20} color={isDarkMode ? "#666" : "#9ca3af"} />
             ))}
         </TouchableOpacity>
     );
 
     const SectionHeader = ({ title }: { title: string }) => (
-        <Text style={styles.sectionHeader}>{title}</Text>
+        <Text style={[styles.sectionHeader, { color: isDarkMode ? '#888' : '#6b7280' }]}>{title}</Text>
     );
 
     return (
-        <View className={isDarkMode ? 'dark' : ''} style={{ flex: 1 }}>
-            <SafeAreaView edges={['top']} style={[styles.container, {
-                backgroundColor: isDarkMode ? '#121212' : '#f9fafb'
-            }]}>
-                <Stack.Screen options={{ headerShown: false }} />
-                <StatusBar style="auto" animated />
+        <SafeAreaView edges={['top']} style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#f9fafb' }]}>
+            <Stack.Screen options={{ headerShown: false }} />
+            <StatusBar style={isDarkMode ? "light" : "dark"} animated />
 
-                {/* Header */}
-                <View style={styles.header}>
-                    <TouchableOpacity
-                        style={styles.backButton}
-                        onPress={() => router.back()}
-                    >
-                        <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#FFF" : "#000"} />
-                    </TouchableOpacity>
-                    <Text className="text-gray-900 dark:text-white text-2xl font-medium mb-0.5">Settings</Text>
-                    <View style={{ width: 40 }} />
+            {/* Header */}
+            <View style={[styles.header, { borderBottomColor: isDarkMode ? '#333' : '#e5e7eb' }]}>
+                <TouchableOpacity
+                    style={styles.backButton}
+                    onPress={() => router.back()}
+                >
+                    <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#FFF" : "#000"} />
+                </TouchableOpacity>
+                <Text style={[styles.headerTitle, { color: isDarkMode ? '#FFF' : '#111827' }]}>Settings</Text>
+                <View style={{ width: 40 }} />
+            </View>
+
+            <ScrollView
+                style={styles.scrollView}
+                showsVerticalScrollIndicator={false}
+            >
+                {/* Account Section */}
+                <SectionHeader title="ACCOUNT" />
+                <View style={[styles.section, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFF' }]}>
+                    <SettingItem
+                        icon="person-outline"
+                        title="Edit Profile"
+                        subtitle="Update your profile information"
+                        onPress={() => router.push('/profile/edit' as any)}
+                    />
+                    <SettingItem
+                        icon="key-outline"
+                        title="Change Password"
+                        subtitle="Update your password"
+                        onPress={() => Alert.alert("Coming Soon", "This feature will be available soon")}
+                    />
+                    <SettingItem
+                        icon="log-out-outline"
+                        title="Logout"
+                        subtitle="Sign out of your account"
+                        onPress={handleLogout}
+                    />
                 </View>
 
-                <ScrollView
-                    style={styles.scrollView}
-                    showsVerticalScrollIndicator={false}
-                >
-                    {/* Account Section */}
-                    <SectionHeader title="ACCOUNT" />
-                    <View className='bg-gray-100 dark:bg-[#1E1E1E] mx-4 rounded-xl overflow-hidden mb-2 text-gray-900 dark:text-white'>
-                        <SettingItem
-                            icon="person-outline"
-                            title="Edit Profile"
-                            subtitle="Update your profile information"
-                            onPress={() => router.push('/profile/edit' as any)}
-                        />
-                        <SettingItem
-                            icon="key-outline"
-                            title="Change Password"
-                            subtitle="Update your password"
-                            onPress={() => Alert.alert("Coming Soon", "This feature will be available soon")}
-                        />
-                        <SettingItem
-                            icon="log-out-outline"
-                            title="Logout"
-                            subtitle="Sign out of your account"
-                            onPress={handleLogout}
-                        />
-                    </View>
+                {/* Preferences Section */}
+                <SectionHeader title="PREFERENCES" />
+                <View style={[styles.section, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFF' }]}>
+                    <SettingItem
+                        icon="notifications-outline"
+                        title="Notifications"
+                        subtitle="Enable push notifications"
+                        onPress={() => { }}
+                        showArrow={false}
+                        rightComponent={
+                            <Switch
+                                value={notificationsEnabled}
+                                onValueChange={setNotificationsEnabled}
+                                trackColor={{ false: isDarkMode ? '#333' : '#d1d5db', true: '#10b981' }}
+                                thumbColor={notificationsEnabled ? '#FFF' : '#888'}
+                            />
+                        }
+                    />
+                    <SettingItem
+                        icon="moon-outline"
+                        title="Dark Mode"
+                        subtitle={isSystemTheme ? "Controlled by system" : "Use dark theme"}
+                        onPress={() => { }}
+                        showArrow={false}
+                        rightComponent={
+                            <Switch
+                                value={isDarkMode}
+                                onValueChange={toggleTheme}
+                                disabled={isSystemTheme}
+                                trackColor={{ false: isDarkMode ? '#333' : '#d1d5db', true: '#10b981' }}
+                                thumbColor={isDarkMode ? '#FFF' : '#888'}
+                            />
+                        }
+                    />
+                    <SettingItem
+                        icon="phone-portrait-outline"
+                        title="Use System Theme"
+                        subtitle="Follow device theme settings"
+                        onPress={() => { }}
+                        showArrow={false}
+                        rightComponent={
+                            <Switch
+                                value={isSystemTheme}
+                                onValueChange={setSystemTheme}
+                                trackColor={{ false: isDarkMode ? '#333' : '#d1d5db', true: '#10b981' }}
+                                thumbColor={isSystemTheme ? '#FFF' : '#888'}
+                            />
+                        }
+                    />
+                    <SettingItem
+                        icon="language-outline"
+                        title="Language"
+                        subtitle="English"
+                        onPress={() => Alert.alert("Coming Soon", "Language selection will be available soon")}
+                    />
+                </View>
 
-                    {/* Preferences Section */}
-                    <SectionHeader title="PREFERENCES" />
-                    <View className='bg-gray-100 dark:bg-[#1E1E1E] mx-4 rounded-xl overflow-hidden mb-2 text-gray-900 dark:text-white'>
-                        <SettingItem
-                            icon="notifications-outline"
-                            title="Notifications"
-                            subtitle="Enable push notifications"
-                            onPress={() => { }}
-                            showArrow={false}
-                            rightComponent={
-                                <Switch
-                                    value={notificationsEnabled}
-                                    onValueChange={setNotificationsEnabled}
-                                    trackColor={{ false: '#333', true: '#4ade80' }}
-                                    thumbColor={notificationsEnabled ? '#FFF' : '#888'}
-                                />
-                            }
-                        />
-                        <SettingItem
-                            icon="moon-outline"
-                            title="Dark Mode"
-                            subtitle={isSystemTheme ? "Controlled by system" : "Use dark theme"}
-                            onPress={() => { }}
-                            showArrow={false}
-                            rightComponent={
-                                <Switch
-                                    value={isDarkMode}
-                                    onValueChange={toggleTheme}
-                                    disabled={isSystemTheme}
-                                    trackColor={{ false: '#333', true: '#4ade80' }}
-                                    thumbColor={isDarkMode ? '#FFF' : '#888'}
-                                />
-                            }
-                        />
-                        <SettingItem
-                            icon="phone-portrait-outline"
-                            title="Use System Theme"
-                            subtitle="Follow device theme settings"
-                            onPress={() => { }}
-                            showArrow={false}
-                            rightComponent={
-                                <Switch
-                                    value={isSystemTheme}
-                                    onValueChange={setSystemTheme}
-                                    trackColor={{ false: '#333', true: '#4ade80' }}
-                                    thumbColor={isSystemTheme ? '#FFF' : '#888'}
-                                />
-                            }
-                        />
-                        <SettingItem
-                            icon="language-outline"
-                            title="Language"
-                            subtitle="English"
-                            onPress={() => Alert.alert("Coming Soon", "Language selection will be available soon")}
-                        />
-                    </View>
+                {/* App Information Section */}
+                <SectionHeader title="APP INFORMATION" />
+                <View style={[styles.section, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFF' }]}>
+                    <SettingItem
+                        icon="information-circle-outline"
+                        title="About Us"
+                        subtitle="Learn more about Pixel Class"
+                        onPress={() => router.push('/settings/about' as any)}
+                    />
+                    <SettingItem
+                        icon="shield-checkmark-outline"
+                        title="Privacy Policy"
+                        subtitle="Read our privacy policy"
+                        onPress={() => router.push('/settings/privacy' as any)}
+                    />
+                    <SettingItem
+                        icon="document-text-outline"
+                        title="Terms & Conditions"
+                        subtitle="Read our terms of service"
+                        onPress={() => router.push('/settings/terms' as any)}
+                    />
+                    <SettingItem
+                        icon="code-slash-outline"
+                        title="Version"
+                        subtitle={`v${appVersion} by Dhruv 🤞 Man`}
+                        onPress={() => { }}
+                        showArrow={false}
+                    />
+                </View>
 
-                    {/* App Information Section */}
-                    <SectionHeader title="APP INFORMATION" />
-                    <View className='bg-gray-100 dark:bg-[#1E1E1E] mx-4 rounded-xl overflow-hidden mb-2 text-gray-900 dark:text-white'>
-                        <SettingItem
-                            icon="information-circle-outline"
-                            title="About Us"
-                            subtitle="Learn more about Pixel Class"
-                            onPress={() => router.push('/settings/about' as any)}
-                        />
-                        <SettingItem
-                            icon="shield-checkmark-outline"
-                            title="Privacy Policy"
-                            subtitle="Read our privacy policy"
-                            onPress={() => router.push('/settings/privacy' as any)}
-                        />
-                        <SettingItem
-                            icon="document-text-outline"
-                            title="Terms & Conditions"
-                            subtitle="Read our terms of service"
-                            onPress={() => router.push('/settings/terms' as any)}
-                        />
-                        <SettingItem
-                            icon="code-slash-outline"
-                            title="Version"
-                            subtitle={`v${appVersion}`}
-                            onPress={() => { }}
-                            showArrow={false}
-                        />
-                    </View>
+                {/* Support Section */}
+                <SectionHeader title="SUPPORT" />
+                <View style={[styles.section, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFF' }]}>
+                    <SettingItem
+                        icon="help-circle-outline"
+                        title="Help & Support"
+                        subtitle="Get help with your account"
+                        onPress={() => Alert.alert("Support", "Contact us at support@pixelclass.com")}
+                    />
+                    <SettingItem
+                        icon="bug-outline"
+                        title="Report a Bug"
+                        subtitle="Help us improve the app"
+                        onPress={() => Alert.alert("Report Bug", "Send bug reports to bugs@pixelclass.com")}
+                    />
+                    <SettingItem
+                        icon="star-outline"
+                        title="Rate Us"
+                        subtitle="Share your feedback"
+                        onPress={() => Alert.alert("Thank You!", "We appreciate your feedback")}
+                    />
+                </View>
 
-                    {/* Support Section */}
-                    <SectionHeader title="SUPPORT" />
-                    <View className='bg-gray-100 dark:bg-[#1E1E1E] mx-4 rounded-xl overflow-hidden mb-2 text-gray-900 dark:text-white'>
-                        <SettingItem
-                            icon="help-circle-outline"
-                            title="Help & Support"
-                            subtitle="Get help with your account"
-                            onPress={() => Alert.alert("Support", "Contact us at support@pixelclass.com")}
-                        />
-                        <SettingItem
-                            icon="bug-outline"
-                            title="Report a Bug"
-                            subtitle="Help us improve the app"
-                            onPress={() => Alert.alert("Report Bug", "Send bug reports to bugs@pixelclass.com")}
-                        />
-                        <SettingItem
-                            icon="star-outline"
-                            title="Rate Us"
-                            subtitle="Share your feedback"
-                            onPress={() => Alert.alert("Thank You!", "We appreciate your feedback")}
-                        />
-                    </View>
-
-                    {/* Footer */}
-                    <View style={styles.footer}>
-                        <Text style={styles.footerText}>Made with ❤️ by Pixel Class Team</Text>
-                        <Text style={styles.footerSubtext}>© 2024 Pixel Class. All rights reserved.</Text>
-                    </View>
-                </ScrollView>
-            </SafeAreaView>
-        </View>
+                {/* Footer */}
+                <View style={styles.footer}>
+                    <Text style={[styles.footerText, { color: isDarkMode ? '#666' : '#9ca3af' }]}>Made by Dhruv 🤞 Man </Text>
+                    <Text style={[styles.footerSubtext, { color: isDarkMode ? '#555' : '#6b7280' }]}>© 2024 Pixel Class. All rights reserved.</Text>
+                </View>
+            </ScrollView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#121212',
     },
     header: {
         flexDirection: 'row',
@@ -250,21 +244,18 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#333',
     },
     backButton: {
         padding: 8,
     },
     headerTitle: {
-        color: '#FFF',
-        fontSize: 20,
-        fontWeight: 'bold',
+        fontSize: 24,
+        fontWeight: '500',
     },
     scrollView: {
         flex: 1,
     },
     sectionHeader: {
-        color: '#888',
         fontSize: 13,
         fontWeight: '600',
         paddingHorizontal: 20,
@@ -273,7 +264,6 @@ const styles = StyleSheet.create({
         letterSpacing: 0.5,
     },
     section: {
-        backgroundColor: '#1E1E1E',
         marginHorizontal: 16,
         borderRadius: 12,
         overflow: 'hidden',
@@ -283,9 +273,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#2A2A2A',
     },
     settingLeft: {
         flexDirection: 'row',
@@ -296,7 +286,6 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: '#2A2A2A',
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 12,
@@ -305,13 +294,11 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     settingTitle: {
-        color: '#FFF',
         fontSize: 16,
         fontWeight: '500',
         marginBottom: 2,
     },
     settingSubtitle: {
-        color: '#888',
         fontSize: 13,
     },
     footer: {
@@ -320,12 +307,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     footerText: {
-        color: '#666',
         fontSize: 14,
         marginBottom: 4,
     },
     footerSubtext: {
-        color: '#555',
         fontSize: 12,
     },
 });

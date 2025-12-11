@@ -1,51 +1,26 @@
-
 import { Link, Stack } from 'expo-router';
-import { useEffect } from 'react';
-import { StyleSheet } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
+import { StyleSheet, Text, View } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function NotFoundScreen() {
-    const containerOpacity = useSharedValue(0);
-    const containerScale = useSharedValue(0.8);
-    const linkScale = useSharedValue(1);
-
-    useEffect(() => {
-        containerOpacity.value = withTiming(1, { duration: 800 });
-        containerScale.value = withTiming(1, { duration: 800 });
-
-        linkScale.value = withRepeat(
-            withSequence(
-                withTiming(1.05, { duration: 600 }),
-                withTiming(1, { duration: 600 })
-            ),
-            -1, // Repeat indefinitely
-            true // Reverse
-        );
-    }, []);
-
-    const animatedContainerStyle = useAnimatedStyle(() => {
-        return {
-            opacity: containerOpacity.value,
-            transform: [{ scale: containerScale.value }],
-        };
-    });
-
-    const animatedLinkStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ scale: linkScale.value }],
-        };
-    });
+    const { isDarkMode } = useTheme();
 
     return (
         <>
-            <Stack.Screen options={{ title: 'Oops! Not Found' }} />
-            <Animated.View style={[styles.container, animatedContainerStyle]}>
+            <Stack.Screen options={{
+                title: 'Oops! Not Found',
+                headerStyle: { backgroundColor: isDarkMode ? '#121212' : '#f9fafb' },
+                headerTintColor: isDarkMode ? '#fff' : '#111827'
+            }} />
+            <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#f9fafb' }]}>
+                <Text style={[styles.title, { color: isDarkMode ? '#FFF' : '#111827' }]}>404</Text>
+                <Text style={[styles.message, { color: isDarkMode ? '#AAA' : '#6b7280' }]}>Page not found</Text>
                 <Link href="/" asChild>
-                    <Animated.Text style={[styles.button, animatedLinkStyle]}>
+                    <Text style={styles.button}>
                         Go back to Home screen!
-                    </Animated.Text>
+                    </Text>
                 </Link>
-            </Animated.View>
+            </View>
         </>
     );
 }
@@ -53,14 +28,23 @@ export default function NotFoundScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#25292e',
         justifyContent: 'center',
         alignItems: 'center',
+        padding: 20,
     },
-
+    title: {
+        fontSize: 72,
+        fontWeight: 'bold',
+        marginBottom: 16,
+    },
+    message: {
+        fontSize: 18,
+        marginBottom: 32,
+    },
     button: {
-        fontSize: 20,
+        fontSize: 16,
+        color: '#10b981',
+        fontWeight: '600',
         textDecorationLine: 'underline',
-        color: '#fff',
     },
 });

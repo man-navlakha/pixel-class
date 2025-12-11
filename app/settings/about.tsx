@@ -162,32 +162,20 @@ export default function AboutScreen() {
                         </Text>
                         <View className="bg-gray-100 dark:bg-[#1E1E1E] rounded-xl p-5 items-center border border-gray-200 dark:border-gray-800">
                             <Text className="text-green-500 dark:text-green-400 text-sm font-semibold mb-1">Lead Developer</Text>
-                            <Text className="text-gray-900 dark:text-white text-lg font-bold">Man Navlakha</Text>
+                            <View className="flex-row items-center gap-5 justify-between w-full">
+                                <Text className="text-gray-900 dark:text-white text-lg font-bold">Man Navlakha</Text>
+                                <Text className="mx-5 text-gray-900 dark:text-white text-lg font-bold"> || </Text>
+                                <Text className="text-gray-900 dark:text-white text-lg font-bold">Dhruv Sharma</Text>
+                            </View>
                         </View>
+
                     </View>
 
                     {/* Social Media */}
                     <View className="px-5 py-6">
                         <Text className="text-gray-900 dark:text-white text-xl font-bold mb-4">Connect With Us</Text>
                         <View className="flex-row justify-center gap-4">
-                            <TouchableOpacity
-                                className="w-15 h-15 rounded-full bg-gray-100 dark:bg-[#1E1E1E] items-center justify-center border border-gray-200 dark:border-gray-800"
-                                onPress={() => openLink('https://twitter.com/pixelclass')}
-                            >
-                                <Ionicons name="logo-twitter" size={24} color="#1DA1F2" />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                className="w-15 h-15 rounded-full bg-gray-100 dark:bg-[#1E1E1E] items-center justify-center border border-gray-200 dark:border-gray-800"
-                                onPress={() => openLink('https://instagram.com/pixelclass')}
-                            >
-                                <Ionicons name="logo-instagram" size={24} color="#E4405F" />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                className="w-15 h-15 rounded-full bg-gray-100 dark:bg-[#1E1E1E] items-center justify-center border border-gray-200 dark:border-gray-800"
-                                onPress={() => openLink('https://linkedin.com/company/pixelclass')}
-                            >
-                                <Ionicons name="logo-linkedin" size={24} color="#0077B5" />
-                            </TouchableOpacity>
+
                             <TouchableOpacity
                                 className="w-15 h-15 rounded-full bg-gray-100 dark:bg-[#1E1E1E] items-center justify-center border border-gray-200 dark:border-gray-800"
                                 onPress={() => openLink('https://github.com/pixelclass')}

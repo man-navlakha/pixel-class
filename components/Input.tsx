@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, TextInputProps, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface InputProps extends TextInputProps {
     label?: string;
@@ -18,30 +19,33 @@ export default function Input({
     isPassword = false,
     ...props
 }: InputProps) {
+    const { isDarkMode } = useTheme();
     const [isFocused, setIsFocused] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
     return (
         <View style={[styles.container, containerStyle]}>
-            {label && <Text style={styles.label}>{label}</Text>}
+            {label && <Text style={[styles.label, { color: isDarkMode ? '#CCC' : '#374151' }]}>{label}</Text>}
 
             <View style={[
                 styles.inputContainer,
-                isFocused && styles.inputContainerFocused,
-                error ? styles.inputContainerError : null
+                {
+                    backgroundColor: isDarkMode ? '#1E1E1E' : '#f3f4f6',
+                    borderColor: error ? '#ef4444' : (isFocused ? '#10b981' : (isDarkMode ? '#333' : '#d1d5db'))
+                }
             ]}>
                 {iconName && (
                     <Ionicons
                         name={iconName}
                         size={20}
-                        color={isFocused ? '#4ade80' : '#666'}
+                        color={isFocused ? '#10b981' : (isDarkMode ? '#666' : '#9ca3af')}
                         style={styles.icon}
                     />
                 )}
 
                 <TextInput
-                    style={styles.input}
-                    placeholderTextColor="#666"
+                    style={[styles.input, { color: isDarkMode ? '#FFF' : '#111827' }]}
+                    placeholderTextColor={isDarkMode ? '#666' : '#9ca3af'}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     secureTextEntry={isPassword && !showPassword}
@@ -56,7 +60,7 @@ export default function Input({
                         <Ionicons
                             name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                             size={20}
-                            color="#666"
+                            color={isDarkMode ? '#666' : '#9ca3af'}
                         />
                     </TouchableOpacity>
                 )}
@@ -73,7 +77,6 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     label: {
-        color: '#CCC',
         fontSize: 14,
         marginBottom: 8,
         fontWeight: '500',
@@ -82,26 +85,16 @@ const styles = StyleSheet.create({
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#1E1E1E',
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: '#333',
         height: 56,
         paddingHorizontal: 16,
-    },
-    inputContainerFocused: {
-        borderColor: '#4ade80',
-        backgroundColor: '#252525',
-    },
-    inputContainerError: {
-        borderColor: '#FF5252',
     },
     icon: {
         marginRight: 12,
     },
     input: {
         flex: 1,
-        color: '#FFF',
         fontSize: 16,
         height: '100%',
     },
@@ -109,7 +102,7 @@ const styles = StyleSheet.create({
         padding: 4,
     },
     errorText: {
-        color: '#FF5252',
+        color: '#ef4444',
         fontSize: 12,
         marginTop: 4,
         marginLeft: 4,

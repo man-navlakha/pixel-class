@@ -8,6 +8,7 @@ import {
     FlatList,
     Image,
     RefreshControl,
+    StyleSheet,
     Text,
     TouchableOpacity,
     View
@@ -157,70 +158,69 @@ export default function ProfileScreen() {
         const isOwnProfile = profile.username === currentUser;
 
         return (
-            <View className="items-center p-5 border-b border-gray-200 dark:border-gray-800 mb-2.5">
+            <View style={[styles.header, { borderBottomColor: isDarkMode ? '#1f2937' : '#e5e7eb' }]}>
                 <Image
                     source={{ uri: profile.profile_pic || "https://i.pravatar.cc/150" }}
-                    style={{ width: 100, height: 100 }}
-                    className="w-25 h-25 rounded-full mb-3 border-2 border-green-500"
+                    style={styles.profileImage}
                 />
-                <View className="flex-row items-center mb-5">
-                    <Text className="text-gray-900 dark:text-white text-2xl font-bold">{profile.username}</Text>
+                <View style={styles.usernameRow}>
+                    <Text style={[styles.username, { color: isDarkMode ? '#FFF' : '#111827' }]}>{profile.username}</Text>
                     {verifiedUsernames.has(profile.username) && (
                         <VerifiedBadge size={24} style={{ marginLeft: 6 }} />
                     )}
                 </View>
 
                 {/* Stats */}
-                <View className="flex-row w-full justify-around mb-6">
-                    <View className="items-center">
-                        <Text className="text-gray-900 dark:text-white text-lg font-bold">{posts.length}</Text>
-                        <Text className="text-gray-500 dark:text-gray-400 text-xs">Posts</Text>
+                <View style={styles.statsRow}>
+                    <View style={styles.statItem}>
+                        <Text style={[styles.statNumber, { color: isDarkMode ? '#FFF' : '#111827' }]}>{posts.length}</Text>
+                        <Text style={[styles.statLabel, { color: isDarkMode ? '#9ca3af' : '#6b7280' }]}>Posts</Text>
                     </View>
                     <TouchableOpacity
-                        className="items-center"
+                        style={styles.statItem}
                         onPress={() => router.push({
                             pathname: '/followers',
                             params: { username: profile.username }
                         } as any)}
                     >
-                        <Text className="text-gray-900 dark:text-white text-lg font-bold">{profile.follower_count || 0}</Text>
-                        <Text className="text-gray-500 dark:text-gray-400 text-xs">Followers</Text>
+                        <Text style={[styles.statNumber, { color: isDarkMode ? '#FFF' : '#111827' }]}>{profile.follower_count || 0}</Text>
+                        <Text style={[styles.statLabel, { color: isDarkMode ? '#9ca3af' : '#6b7280' }]}>Followers</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        className="items-center"
+                        style={styles.statItem}
                         onPress={() => router.push({
                             pathname: '/following',
                             params: { username: profile.username }
                         } as any)}
                     >
-                        <Text className="text-gray-900 dark:text-white text-lg font-bold">{profile.following_count || 0}</Text>
-                        <Text className="text-gray-500 dark:text-gray-400 text-xs">Following</Text>
+                        <Text style={[styles.statNumber, { color: isDarkMode ? '#FFF' : '#111827' }]}>{profile.following_count || 0}</Text>
+                        <Text style={[styles.statLabel, { color: isDarkMode ? '#9ca3af' : '#6b7280' }]}>Following</Text>
                     </TouchableOpacity>
                 </View>
 
                 {/* Actions */}
-                <View className="flex-row gap-2.5 mb-5">
+                <View style={styles.actionsRow}>
                     {isOwnProfile ? (
                         <>
                             <TouchableOpacity
-                                className="bg-gray-200 dark:bg-gray-800 py-2.5 px-8 rounded-full"
+                                style={[styles.actionButton, { backgroundColor: isDarkMode ? '#1f2937' : '#e5e7eb' }]}
                                 onPress={() => router.push('/profile/edit' as any)}
                             >
-                                <Text className="text-gray-900 dark:text-white font-semibold">Edit Profile</Text>
+                                <Text style={[styles.actionButtonText, { color: isDarkMode ? '#FFF' : '#111827' }]}>Edit Profile</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
-                                className="bg-gray-200 dark:bg-gray-800 py-2.5 px-8 rounded-full"
+                                style={[styles.actionButton, { backgroundColor: isDarkMode ? '#1f2937' : '#e5e7eb' }]}
                                 onPress={() => router.push('/auth/logout' as any)}
                             >
-                                <Text className="text-gray-900 dark:text-white font-semibold">Logout</Text>
+                                <Text style={[styles.actionButtonText, { color: isDarkMode ? '#FFF' : '#111827' }]}>Logout</Text>
                             </TouchableOpacity>
                         </>
                     ) : (
                         <TouchableOpacity
-                            className={`py-2.5 px-8 rounded-full ${isFollowing ? 'bg-transparent border border-white' : 'bg-green-500'}`}
+                            style={[styles.followButton, isFollowing ? { backgroundColor: 'transparent', borderWidth: 1, borderColor: isDarkMode ? '#FFF' : '#111827' } : { backgroundColor: '#10b981' }]}
                             onPress={handleFollowToggle}
                         >
-                            <Text className={`font-semibold ${isFollowing ? 'text-gray-900 dark:text-white' : 'text-white'}`}>
+                            <Text style={[styles.followButtonText, { color: isFollowing ? (isDarkMode ? '#FFF' : '#111827') : '#FFF' }]}>
                                 {isFollowing ? "Unfollow" : "Follow"}
                             </Text>
                         </TouchableOpacity>
@@ -229,11 +229,11 @@ export default function ProfileScreen() {
 
                 {/* Suggestions Section */}
                 {!isOwnProfile && suggestions.length > 0 && (
-                    <View className="w-full mb-6">
-                        <View className="flex-row justify-between items-center mb-3 px-1">
-                            <Text className="text-gray-900 dark:text-white text-base font-semibold">Suggested for you</Text>
+                    <View style={styles.suggestionsContainer}>
+                        <View style={styles.suggestionsHeader}>
+                            <Text style={[styles.suggestionsTitle, { color: isDarkMode ? '#FFF' : '#111827' }]}>Suggested for you</Text>
                             <TouchableOpacity>
-                                <Text className="text-green-500 text-sm">See all</Text>
+                                <Text style={styles.seeAllText}>See all</Text>
                             </TouchableOpacity>
                         </View>
                         <FlatList
@@ -242,9 +242,9 @@ export default function ProfileScreen() {
                             showsHorizontalScrollIndicator={false}
                             keyExtractor={(item) => item.username}
                             renderItem={({ item }) => (
-                                <View className="w-[140px] bg-gray-100 dark:bg-black rounded-lg p-3 items-center mr-2.5 border border-gray-200 dark:border-gray-800 relative">
+                                <View style={[styles.suggestionCard, { backgroundColor: isDarkMode ? '#000' : '#f3f4f6', borderColor: isDarkMode ? '#1f2937' : '#e5e7eb' }]}>
                                     <TouchableOpacity
-                                        className="absolute top-2 right-2 z-10"
+                                        style={styles.closeButton}
                                         onPress={() => setSuggestions(prev => prev.filter(u => u.username !== item.username))}
                                     >
                                         <Ionicons name="close" size={16} color={isDarkMode ? "#888" : "#6b7280"} />
@@ -253,30 +253,30 @@ export default function ProfileScreen() {
                                     <TouchableOpacity onPress={() => router.push(`/profile/${item.username}` as any)}>
                                         <Image
                                             source={{ uri: item.profile_pic || `https://i.pravatar.cc/150?u=${item.username}` }}
-                                            className="w-15 h-15 rounded-full mb-2" style={{ width: 100, height: 100 }}
+                                            style={styles.suggestionImage}
                                         />
                                     </TouchableOpacity>
 
-                                    <View className="flex-row items-center justify-center mt-2">
-                                        <Text className="text-gray-900 dark:text-white text-sm font-semibold text-center" numberOfLines={1}>{item.username}</Text>
+                                    <View style={styles.suggestionUsernameRow}>
+                                        <Text style={[styles.suggestionUsername, { color: isDarkMode ? '#FFF' : '#111827' }]} numberOfLines={1}>{item.username}</Text>
                                         {verifiedUsernames.has(item.username) && (
                                             <VerifiedBadge size={12} style={{ marginLeft: 4 }} />
                                         )}
                                     </View>
 
-                                    <Text className="text-gray-600 dark:text-gray-400 text-xs text-center mb-3" numberOfLines={1}>
+                                    <Text style={[styles.suggestionName, { color: isDarkMode ? '#9ca3af' : '#6b7280' }]} numberOfLines={1}>
                                         {item.first_name} {item.last_name}
                                     </Text>
 
                                     <TouchableOpacity
-                                        className="bg-transparent py-1.5 px-5 rounded-md border border-green-500 w-full items-center"
+                                        style={styles.suggestionFollowButton}
                                         onPress={() => handleSuggestionFollow(item)}
                                         disabled={suggestionLoading === item.username}
                                     >
                                         {suggestionLoading === item.username ? (
-                                            <ActivityIndicator size="small" color="#4ade80" />
+                                            <ActivityIndicator size="small" color="#10b981" />
                                         ) : (
-                                            <Text className="text-green-500 text-xs font-semibold">Follow</Text>
+                                            <Text style={styles.suggestionFollowText}>Follow</Text>
                                         )}
                                     </TouchableOpacity>
                                 </View>
@@ -286,61 +286,241 @@ export default function ProfileScreen() {
                     </View>
                 )}
 
-                <Text className="text-gray-900 dark:text-white text-lg font-semibold self-start mt-2.5 w-full">Notes Uploaded</Text>
+                <Text style={[styles.notesTitle, { color: isDarkMode ? '#FFF' : '#111827' }]}>Notes Uploaded</Text>
             </View>
         );
     };
 
     const renderPost = ({ item }: { item: any }) => (
-        <View className="flex-row items-center bg-gray-100 dark:bg-[#1E1E1E] p-4 rounded-xl mb-3 mx-5">
-            <Ionicons name="document-text" size={24} color="#4ade80" />
-            <View className="ml-3 flex-1">
-                <Text className="text-gray-900 dark:text-white text-base font-medium" numberOfLines={1}>{item.contant || "Note"}</Text>
-                <Text className="text-gray-600 dark:text-gray-400 text-xs mt-0.5">{item.sub} • Sem {item.sem}</Text>
+        <View style={[styles.postCard, { backgroundColor: isDarkMode ? '#1E1E1E' : '#f3f4f6' }]}>
+            <Ionicons name="document-text" size={24} color="#10b981" />
+            <View style={styles.postContent}>
+                <Text style={[styles.postTitle, { color: isDarkMode ? '#FFF' : '#111827' }]} numberOfLines={1}>{item.contant || "Note"}</Text>
+                <Text style={[styles.postSubtitle, { color: isDarkMode ? '#9ca3af' : '#6b7280' }]}>{item.sub} • Sem {item.sem}</Text>
             </View>
         </View>
     );
 
     if (loading) {
         return (
-            <View className={isDarkMode ? 'dark' : ''} style={{ flex: 1 }}>
-                <SafeAreaView className="flex-1 justify-center items-center bg-gray-50 dark:bg-[#121212]">
-                    <ActivityIndicator size="large" color="#4ade80" />
-                </SafeAreaView>
-            </View>
+            <SafeAreaView style={[styles.container, { backgroundColor: isDarkMode ? '#000' : '#f9fafb' }]}>
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#10b981" />
+                </View>
+            </SafeAreaView>
         );
     }
 
     const isOwnProfile = profile?.username === currentUser;
 
     return (
-        <View className={isDarkMode ? 'dark' : ''} style={{ flex: 1 }}>
-            <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#121212]" edges={['top']}>
-                <Stack.Screen options={{ headerShown: false }} />
-                <StatusBar style="auto" animated />
+        <SafeAreaView style={[styles.container, { backgroundColor: isDarkMode ? '#000' : '#f9fafb' }]} edges={['top']}>
+            <Stack.Screen options={{ headerShown: false }} />
+            <StatusBar style="auto" animated />
 
-                {/* Settings Icon - Only show on own profile */}
-                {isOwnProfile && (
-                    <TouchableOpacity
-                        className="absolute top-[50px] right-5 z-10 bg-gray-200 dark:bg-[#1E1E1E] p-2.5 rounded-full border border-gray-300 dark:border-gray-800"
-                        onPress={() => router.push('/settings' as any)}
-                    >
-                        <Ionicons name="settings-outline" size={24} color={isDarkMode ? "#FFF" : "#000"} />
-                    </TouchableOpacity>
-                )}
+            {/* Settings Icon - Only show on own profile */}
+            {isOwnProfile && (
+                <TouchableOpacity
+                    style={[styles.settingsButton, { backgroundColor: isDarkMode ? '#1f2937' : '#f3f4f6', borderColor: isDarkMode ? '#374151' : '#d1d5db' }]}
+                    onPress={() => router.push('/settings' as any)}
+                >
+                    <Ionicons name="settings-outline" size={24} color={isDarkMode ? "#FFF" : "#000"} />
+                </TouchableOpacity>
+            )}
 
-                <FlatList
-                    data={posts}
-                    renderItem={renderPost}
-                    keyExtractor={(item, index) => index.toString()}
-                    ListHeaderComponent={renderHeader}
-                    ListEmptyComponent={
-                        <Text className="text-gray-500 dark:text-gray-600 text-center mt-5">No notes uploaded yet.</Text>
-                    }
-                    contentContainerStyle={{ paddingBottom: 20 }}
-                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={fetchData} />}
-                />
-            </SafeAreaView>
-        </View>
+            <FlatList
+                data={posts}
+                renderItem={renderPost}
+                keyExtractor={(item, index) => index.toString()}
+                ListHeaderComponent={renderHeader}
+                ListEmptyComponent={
+                    <Text style={[styles.emptyText, { color: isDarkMode ? '#6b7280' : '#9ca3af' }]}>No notes uploaded yet.</Text>
+                }
+                contentContainerStyle={{ paddingBottom: 20 }}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={fetchData} />}
+            />
+        </SafeAreaView>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    header: {
+        alignItems: 'center',
+        padding: 20,
+        borderBottomWidth: 1,
+        marginBottom: 10,
+    },
+    profileImage: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        marginBottom: 12,
+        borderWidth: 2,
+        borderColor: '#10b981',
+    },
+    usernameRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    username: {
+        fontSize: 24,
+        fontWeight: 'bold',
+    },
+    statsRow: {
+        flexDirection: 'row',
+        width: '100%',
+        justifyContent: 'space-around',
+        marginBottom: 24,
+    },
+    statItem: {
+        alignItems: 'center',
+    },
+    statNumber: {
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    statLabel: {
+        fontSize: 12,
+    },
+    actionsRow: {
+        flexDirection: 'row',
+        gap: 10,
+        marginBottom: 20,
+    },
+    actionButton: {
+        paddingVertical: 10,
+        paddingHorizontal: 32,
+        borderRadius: 20,
+    },
+    actionButtonText: {
+        fontWeight: '600',
+    },
+    followButton: {
+        paddingVertical: 10,
+        paddingHorizontal: 32,
+        borderRadius: 20,
+    },
+    followButtonText: {
+        fontWeight: '600',
+    },
+    suggestionsContainer: {
+        width: '100%',
+        marginBottom: 24,
+    },
+    suggestionsHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+        paddingHorizontal: 4,
+    },
+    suggestionsTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    seeAllText: {
+        color: '#10b981',
+        fontSize: 14,
+    },
+    suggestionCard: {
+        width: 140,
+        borderRadius: 12,
+        padding: 12,
+        alignItems: 'center',
+        marginRight: 10,
+        borderWidth: 1,
+        position: 'relative',
+    },
+    closeButton: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        zIndex: 10,
+    },
+    suggestionImage: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        marginBottom: 8,
+    },
+    suggestionUsernameRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 8,
+    },
+    suggestionUsername: {
+        fontSize: 14,
+        fontWeight: '600',
+        textAlign: 'center',
+    },
+    suggestionName: {
+        fontSize: 12,
+        textAlign: 'center',
+        marginBottom: 12,
+    },
+    suggestionFollowButton: {
+        backgroundColor: 'transparent',
+        paddingVertical: 6,
+        paddingHorizontal: 20,
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: '#10b981',
+        width: '100%',
+        alignItems: 'center',
+    },
+    suggestionFollowText: {
+        color: '#10b981',
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    notesTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        alignSelf: 'flex-start',
+        marginTop: 10,
+        width: '100%',
+    },
+    postCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        borderRadius: 16,
+        marginBottom: 12,
+        marginHorizontal: 20,
+    },
+    postContent: {
+        marginLeft: 12,
+        flex: 1,
+    },
+    postTitle: {
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    postSubtitle: {
+        fontSize: 12,
+        marginTop: 2,
+    },
+    settingsButton: {
+        position: 'absolute',
+        top: 50,
+        right: 20,
+        zIndex: 10,
+        padding: 10,
+        borderRadius: 20,
+        borderWidth: 1,
+    },
+    emptyText: {
+        textAlign: 'center',
+        marginTop: 20,
+    },
+});

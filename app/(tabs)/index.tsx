@@ -8,12 +8,15 @@ import {
     ActivityIndicator,
     FlatList,
     Image,
+    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
     View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import VerifiedBadge from '../../components/VerifiedBadge';
+import { verifiedUsernames } from '../../constants/verifiedAccounts';
 import { useTheme } from '../../contexts/ThemeContext';
 import { API_URLS, apiCall } from '../../utils/api';
 
@@ -24,6 +27,7 @@ export default function HomeScreen() {
     const [semesters, setSemesters] = useState<number[]>([]);
     const [courseName, setCourseName] = useState('');
     const [user, setUser] = useState({ username: 'Guest', profile_pic: '' });
+    const [verifiedAccounts, setVerifiedAccounts] = useState<any[]>([]);
 
     useEffect(() => {
         fetchInitialData();
@@ -57,11 +61,31 @@ export default function HomeScreen() {
                 const semArray = Array.from({ length: selectedCourse.number_sem }, (_, i) => i + 1);
                 setSemesters(semArray);
             }
+
+            // Fetch verified accounts
+            await fetchVerifiedAccounts();
         } catch (error: any) {
             console.log("Auth Error:", error.message);
             router.replace('/auth/login');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchVerifiedAccounts = async () => {
+        try {
+            const verifiedUsers = [];
+            for (const username of Array.from(verifiedUsernames)) {
+                try {
+                    const profile = await apiCall(API_URLS.PROFILE_DETAILS, 'POST', { username });
+                    verifiedUsers.push(profile);
+                } catch (err) {
+                    console.log(`Could not fetch profile for ${username}`);
+                }
+            }
+            setVerifiedAccounts(verifiedUsers);
+        } catch (error) {
+            console.log("Error fetching verified accounts:", error);
         }
     };
 
@@ -75,6 +99,7 @@ export default function HomeScreen() {
     const renderSemesterCard = ({ item }: { item: number }) => (
         <TouchableOpacity
             style={styles.semesterCard}
+            className={` ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}
             onPress={() => handleSemesterPress(item)}
             activeOpacity={0.8}
         >
@@ -156,16 +181,65 @@ export default function HomeScreen() {
 
             <FlatList
                 data={semesters}
+                className={`rounded-3xl border-2 ${isDarkMode ? 'border-[#1E1E1E07]' : 'border-[#10b981]'}`}
                 renderItem={renderSemesterCard}
                 keyExtractor={(item) => item.toString()}
                 numColumns={2}
                 contentContainerStyle={styles.listContent}
                 showsVerticalScrollIndicator={false}
                 ListHeaderComponent={
-                    <Text style={[styles.sectionTitle, { color: isDarkMode ? '#FFF' : '#111827' }]}>Your Semesters</Text>
+                    <>
+                        {/* Verified Accounts Section */}
+                        {verifiedAccounts.length > 0 && (
+                            <View style={styles.verifiedSection}>
+                                <View style={styles.sectionHeader}>
+                                    <Ionicons name="shield-checkmark" size={20} color="#10b981" />
+                                    <Text style={[styles.sectionTitle, { color: isDarkMode ? '#FFF' : '#111827' }]}>Verified Accounts</Text>
+                                </View>
+                                <ScrollView
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={styles.verifiedScrollContent}
+                                >
+                                    {verifiedAccounts.map((account, index) => (
+                                        <TouchableOpacity
+                                            key={index}
+                                            style={[styles.verifiedCard, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFF' }, { borderColor: isDarkMode ? '#ffffff09' : '#10b98152' }]}
+                                            onPress={() => router.push(`/profile/${account.username}` as any)}
+                                            activeOpacity={0.7}
+                                        >
+                                            <View style={styles.verifiedAvatarContainer}>
+                                                <Image
+                                                    source={{ uri: account.profile_pic || `https://i.pravatar.cc/150?u=${account.username}` }}
+                                                    style={styles.verifiedAvatar}
+                                                />
+                                                <View style={[styles.verifiedBadgeContainer, { backgroundColor: isDarkMode ? '#1E1E1E' : '#FFF' }]}>
+                                                    <VerifiedBadge size={16} />
+                                                </View>
+                                            </View>
+                                            <Text
+                                                style={[styles.verifiedUsername, { color: isDarkMode ? '#FFF' : '#111827' }]}
+                                                numberOfLines={1}
+                                            >
+                                                {account.username}
+                                            </Text>
+                                            <Text
+                                                style={[styles.verifiedName, { color: isDarkMode ? '#9ca3af' : '#6b7280' }]}
+                                                numberOfLines={1}
+                                            >
+                                                {account.first_name} {account.last_name}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+                            </View>
+                        )}
+
+                        <Text style={[styles.sectionTitle, { color: isDarkMode ? '#FFF' : '#111827' }]}>Your Semesters</Text>
+                    </>
                 }
                 ListFooterComponent={
-                    <View style={styles.footer}>
+                    < View style={styles.footer} >
                         <Text style={[styles.footerTitle, { color: isDarkMode ? '#6b7280' : '#9ca3af' }]}>Live it up!</Text>
                         <View style={styles.footerRow}>
                             <Text style={[styles.footerText, { color: isDarkMode ? '#6b7280' : '#6b7280' }]}>Crafted with </Text>
@@ -174,10 +248,10 @@ export default function HomeScreen() {
                         </View>
                         <Text style={[styles.footerCopyright, { color: isDarkMode ? '#4b5563' : '#9ca3af' }]}>© 2025 Pixel Class. All rights reserved.</Text>
                         <Text style={[styles.footerVersion, { color: isDarkMode ? '#374151' : '#d1d5db' }]}>v{Constants.expoConfig?.version ?? (Constants.manifest as any)?.version ?? '1.0.0'}</Text>
-                    </View>
+                    </View >
                 }
             />
-        </View>
+        </View >
     );
 }
 
@@ -268,6 +342,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 8,
         marginBottom: 16,
         height: 176,
+        borderWidth: 1,
         borderRadius: 20,
         overflow: 'hidden',
         shadowColor: "#000",
@@ -336,5 +411,57 @@ const styles = StyleSheet.create({
     footerVersion: {
         fontSize: 10,
         marginTop: 4,
+    },
+    // Verified Accounts Styles
+    verifiedSection: {
+        marginBottom: 24,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+        marginLeft: 8,
+        gap: 8,
+    },
+    verifiedScrollContent: {
+        paddingHorizontal: 8,
+    },
+    verifiedCard: {
+        width: 140,
+        marginHorizontal: 6,
+        padding: 16,
+        borderWidth: 2,
+        borderColor: '#10b981',
+
+        borderRadius: 16,
+        alignItems: 'center',
+    },
+    verifiedAvatarContainer: {
+        position: 'relative',
+        marginBottom: 12,
+    },
+    verifiedAvatar: {
+        width: 72,
+        height: 72,
+        borderRadius: 36,
+        borderWidth: 2,
+        borderColor: '#10b981',
+    },
+    verifiedBadgeContainer: {
+        position: 'absolute',
+        bottom: -4,
+        right: -4,
+        borderRadius: 12,
+        padding: 2,
+    },
+    verifiedUsername: {
+        fontSize: 14,
+        fontWeight: '600',
+        marginBottom: 2,
+        textAlign: 'center',
+    },
+    verifiedName: {
+        fontSize: 12,
+        textAlign: 'center',
     },
 });

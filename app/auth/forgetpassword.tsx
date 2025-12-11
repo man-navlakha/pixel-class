@@ -3,13 +3,14 @@ import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import { useTheme } from '../../contexts/ThemeContext';
 import { API_URLS, apiCall } from '../../utils/api';
 
 export default function ForgetPasswordScreen() {
     const router = useRouter();
+    const { isDarkMode } = useTheme();
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -34,26 +35,26 @@ export default function ForgetPasswordScreen() {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#f9fafb' }]}>
             <Stack.Screen options={{ headerShown: false }} />
-            <StatusBar style="light" animated />
+            <StatusBar style={isDarkMode ? "light" : "dark"} animated />
 
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={{ flex: 1 }}
             >
                 <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                    <Animated.View entering={FadeInUp.delay(200).duration(1000)} style={styles.header}>
+                    <View style={styles.header}>
                         <Image
                             source={{ uri: 'https://ik.imagekit.io/pxc/pixel%20class%20fav%20w-02.png' }}
                             style={styles.logo}
                             contentFit="contain"
                         />
-                        <Text style={styles.title}>Forgot Password?</Text>
-                        <Text style={styles.subtitle}>Enter your email to receive a reset link.</Text>
-                    </Animated.View>
+                        <Text style={[styles.title, { color: isDarkMode ? '#FFFFFF' : '#111827' }]}>Forgot Password?</Text>
+                        <Text style={[styles.subtitle, { color: isDarkMode ? '#AAAAAA' : '#6b7280' }]}>Enter your email to receive a reset link.</Text>
+                    </View>
 
-                    <Animated.View entering={FadeInDown.delay(400).duration(1000)} style={styles.form}>
+                    <View style={styles.form}>
                         <Input
                             label="Email"
                             placeholder="email@example.com"
@@ -78,7 +79,7 @@ export default function ForgetPasswordScreen() {
                                 <Text style={styles.linkText}>Back to Login</Text>
                             </TouchableOpacity>
                         </View>
-                    </Animated.View>
+                    </View>
                 </ScrollView>
             </KeyboardAvoidingView>
         </View>
@@ -86,15 +87,15 @@ export default function ForgetPasswordScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#121212' },
+    container: { flex: 1 },
     scrollContent: { flexGrow: 1, justifyContent: 'center', padding: 24 },
     header: { alignItems: 'center', marginBottom: 40 },
     logo: { width: 80, height: 80, marginBottom: 20, borderRadius: 20 },
-    title: { fontSize: 32, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8 },
-    subtitle: { fontSize: 16, color: '#AAAAAA', textAlign: 'center' },
+    title: { fontSize: 32, fontWeight: 'bold', marginBottom: 8 },
+    subtitle: { fontSize: 16, textAlign: 'center' },
     form: { width: '100%' },
     button: { marginBottom: 24 },
     footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
-    linkText: { color: '#4ade80', fontSize: 14, fontWeight: 'bold' },
-    errorText: { color: '#FF5252', marginBottom: 15, textAlign: 'center' }
+    linkText: { color: '#10b981', fontSize: 14, fontWeight: 'bold' },
+    errorText: { color: '#ef4444', marginBottom: 15, textAlign: 'center' }
 });
