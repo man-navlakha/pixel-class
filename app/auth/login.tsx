@@ -1,3 +1,4 @@
+import { makeRedirectUri } from 'expo-auth-session';
 import { Image } from 'expo-image';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -25,6 +26,10 @@ export default function LoginScreen() {
         webClientId: '724330412810-krfm9oo85om3vkt9gcs65turjgpokdbh.apps.googleusercontent.com',
         iosClientId: '724330412810-gsfoobrlbor5mfr9d972s7nd8c12nktj.apps.googleusercontent.com',
         androidClientId: '724330412810-vjesigur94njprddrfarcl30jmsokmfd.apps.googleusercontent.com',
+        redirectUri: makeRedirectUri({
+            scheme: 'pixelclass', // Must match 'scheme' in your app.json
+            path: 'auth/login'    // Optional: helps route back to this screen
+        }),
     });
 
     useEffect(() => {
